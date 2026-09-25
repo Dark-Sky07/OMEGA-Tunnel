@@ -9,7 +9,12 @@
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
 set -u
 
-VERSION="0.3.0"
+# If stdin is not a terminal (e.g. piped from curl/bash), reconnect to /dev/tty
+if [ ! -t 0 ] && [ -e /dev/tty ]; then
+  exec </dev/tty
+fi
+
+VERSION="0.3.1"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE_DIR="/opt/omega-boost"
 
@@ -29,10 +34,6 @@ fi
 
 clear_screen() {
   clear 2>/dev/null || printf "\033c"
-}
-
-get_public_ip() {
-  curl -s4m 2 https://api.ipify.org || curl -s4m 2 https://icanhazip.com || echo "Unknown"
 }
 
 get_bbr_status() {
@@ -88,8 +89,6 @@ get_port_status() {
 draw_header() {
   local mem_info
   mem_info="$(free -h 2>/dev/null | awk '/Mem:/ {print $3 "/" $2}')"
-  local load_info
-  load_info="$(uptime 2>/dev/null | awk -F'load average:' '{print $2}' | xargs)"
 
   printf "%s========================================================================%s\n" "$C_B" "$C_0"
   printf "%s    ____  __  __ _____ ____    _       _____                             %s\n" "$C_B" "$C_0"
@@ -129,7 +128,7 @@ show_reality_guide() {
   printf "  2. The MSS Clamping fix in OMEGA-Tunnel prevents mobile MTU fragmentation drops.\n"
   printf "  3. Reality uses authentic foreign TLS certificates that pass DPI inspection.\n\n"
   
-  read -r -p "Press [Enter] to return to main menu..." dummy
+  read -r -p "Press [Enter] to return to main menu..." dummy || true
 }
 
 run_diagnostics() {
@@ -146,7 +145,7 @@ run_diagnostics() {
   time nslookup www.yahoo.com 2>/dev/null | grep -E "Address|Name" || host www.yahoo.com 2>/dev/null || echo "DNS query finished"
 
   printf "\n"
-  read -r -p "Press [Enter] to return to main menu..." dummy
+  read -r -p "Press [Enter] to return to main menu..." dummy || true
 }
 
 run_one_click() {
@@ -157,7 +156,7 @@ run_one_click() {
   printf "  2. Network & Kernel Tuning (BBR + FQ + sysctl buffer tuning)\n"
   printf "  3. Operator Compatibility Booster (Samantel/Mobile MSS Clamping)\n\n"
   
-  read -r -p "Do you want to proceed? [y/N]: " confirm
+  read -r -p "Do you want to proceed? [y/N]: " confirm || confirm="n"
   case "$confirm" in
     [yY]|[yY][eE][sS])
       printf "\n[1/3] Updating system packages...\n"
@@ -176,7 +175,7 @@ run_one_click() {
       ;;
   esac
   printf "\n"
-  read -r -p "Press [Enter] to return to main menu..." dummy
+  read -r -p "Press [Enter] to return to main menu..." dummy || true
 }
 
 main_menu() {
@@ -195,13 +194,19 @@ main_menu() {
     printf "%s  [0]%s Exit\n" "$C_R" "$C_0"
     printf "%s------------------------------------------------------------------------%s\n" "$C_B" "$C_0"
     
-    read -r -p "Please select an option [0-8]: " choice
+    local choice=""
+    if ! read -r -p "Please select an option [0-8]: " choice; then
+      # If read encounters EOF (non-interactive or broken pipe), exit cleanly
+      printf "\nSession ended.\n"
+      exit 0
+    fi
+
     case "$choice" in
       1)
         clear_screen
         bash "${SCRIPT_DIR}/omega-preflight.sh" || true
         printf "\n"
-        read -r -p "Press [Enter] to return to main menu..." dummy
+        read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
       2)
         clear_screen
@@ -210,7 +215,7 @@ main_menu() {
         printf "  [2] Dry-run preview\n"
         printf "  [3] Show status\n"
         printf "  [4] Rollback network tuning\n"
-        read -r -p "Choice [1-4]: " subchoice
+        read -r -p "Choice [1-4]: " subchoice || subchoice=""
         clear_screen
         case "$subchoice" in
           1) bash "${SCRIPT_DIR}/omega-boost.sh" --apply ;;
@@ -220,7 +225,7 @@ main_menu() {
           *) echo "Invalid choice." ;;
         esac
         printf "\n"
-        read -r -p "Press [Enter] to return to main menu..." dummy
+        read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
       3)
         clear_screen
@@ -228,7 +233,7 @@ main_menu() {
         printf "  [1] Apply MSS Clamping & MTU Fix (Samantel / Rightel / LTE)\n"
         printf "  [2] Show operator status\n"
         printf "  [3] Rollback operator rules\n"
-        read -r -p "Choice [1-3]: " opchoice
+        read -r -p "Choice [1-3]: " opchoice || opchoice=""
         clear_screen
         case "$opchoice" in
           1) bash "${SCRIPT_DIR}/omega-operator-fix.sh" --apply ;;
@@ -237,13 +242,13 @@ main_menu() {
           *) echo "Invalid choice." ;;
         esac
         printf "\n"
-        read -r -p "Press [Enter] to return to main menu..." dummy
+        read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
       4)
         clear_screen
         bash "${SCRIPT_DIR}/omega-sysupdate.sh" || true
         printf "\n"
-        read -r -p "Press [Enter] to return to main menu..." dummy
+        read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
       5)
         run_one_click
@@ -257,7 +262,7 @@ main_menu() {
       8)
         clear_screen
         printf "%s=== ROLLBACK ALL OMEGA-TUNNEL SETTINGS ===%s\n" "$C_M" "$C_0"
-        read -r -p "Are you sure you want to restore original server settings? [y/N]: " confirm_rb
+        read -r -p "Are you sure you want to restore original server settings? [y/N]: " confirm_rb || confirm_rb="n"
         case "$confirm_rb" in
           [yY]|[yY][eE][sS])
             bash "${SCRIPT_DIR}/omega-boost.sh" --rollback || true
@@ -269,7 +274,7 @@ main_menu() {
             ;;
         esac
         printf "\n"
-        read -r -p "Press [Enter] to return to main menu..." dummy
+        read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
       0|q|Q)
         clear_screen
