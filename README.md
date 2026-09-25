@@ -34,9 +34,31 @@ sudo bash scripts/omega-preflight.sh
 
 گزارش کامل (پورت‌های آزاد، وضعیت پنل، نسخه Xray، BBR، فایروال و…) در `/tmp/omega-preflight-*.txt` ذخیره می‌شه.
 
+### قدم ۲ — اعمال تیونینگ شبکه (بدون ری‌استارت، بدون قطعی)
+
+ابتدا پیش‌نمایش بدون دست‌کاری:
+```bash
+sudo bash scripts/omega-boost.sh --dry-run
+```
+
+اعمال زنده در حافظه کرنل:
+```bash
+sudo bash scripts/omega-boost.sh --apply
+```
+
+بررسی وضعیت اعمال‌شده:
+```bash
+sudo bash scripts/omega-boost.sh --status
+```
+
+بازگردانی سریع در صورت نیاز:
+```bash
+sudo bash scripts/omega-boost.sh --rollback
+```
+
 ## وضعیت پروژه
 
 - [x] `omega-preflight.sh` — audit فقط‌خواندنی سرور
-- [ ] `omega-boost.sh` — تیونینگ شبکه (BBR/sysctl) با dry-run و rollback
+- [x] `omega-boost.sh` — تیونینگ شبکه (BBR/FQ/sysctl) با dry-run و rollback
 - [ ] اینباندهای ایزوله Reality/Hysteria2 کنار پنل
 - [ ] failover خودکار و مانیتورینگ
