@@ -14,7 +14,7 @@ if [ ! -t 0 ] && [ -e /dev/tty ]; then
   exec </dev/tty
 fi
 
-VERSION="0.3.1"
+VERSION="0.3.5"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE_DIR="/opt/omega-boost"
 
@@ -68,6 +68,14 @@ get_operator_status() {
   fi
 }
 
+get_instagram_status() {
+  if iptables -C OUTPUT -p udp --dport 443 -j REJECT --reject-with icmp-port-unreachable >/dev/null 2>&1; then
+    printf "%sOptimized (QUIC Fast-Reject)%s" "$C_G" "$C_0"
+  else
+    printf "%sDefault (Unoptimized)%s" "$C_Y" "$C_0"
+  fi
+}
+
 get_port_status() {
   local port="$1"
   local proto="$2"
@@ -102,7 +110,7 @@ draw_header() {
   
   printf "  Server Panel:      %-30b  Kernel CC:     %b\n" "$(get_panel_status)" "$(get_bbr_status)"
   printf "  Operator Fix:      %-30b  Memory:        %s\n" "$(get_operator_status)" "${mem_info:-unknown}"
-  printf "  TCP Port 443:      %-30b  UDP Port 443:  %b\n" "$(get_port_status 443 tcp)" "$(get_port_status 443 udp)"
+  printf "  Instagram Stream:  %-30b  TCP 443:       %b\n" "$(get_instagram_status)" "$(get_port_status 443 tcp)"
   printf "%s------------------------------------------------------------------------%s\n" "$C_B" "$C_0"
 }
 
@@ -151,24 +159,28 @@ run_diagnostics() {
 run_one_click() {
   clear_screen
   printf "%s=== ONE-CLICK FULL SERVER OPTIMIZATION ===%s\n" "$C_B" "$C_0"
-  printf "This will run:\n"
+  printf "This will run all optimizations together:\n"
   printf "  1. System Update & Essential Tools Installation\n"
   printf "  2. Network & Kernel Tuning (BBR + FQ + sysctl buffer tuning)\n"
-  printf "  3. Operator Compatibility Booster (Samantel/Mobile MSS Clamping)\n\n"
+  printf "  3. Operator Compatibility Booster (Samantel/Mobile MSS Clamping)\n"
+  printf "  4. Instagram & Streaming Optimizer (QUIC Fast-Reject + TCP Pacing)\n\n"
   
   read -r -p "Do you want to proceed? [y/N]: " confirm || confirm="n"
   case "$confirm" in
     [yY]|[yY][eE][sS])
-      printf "\n[1/3] Updating system packages...\n"
+      printf "\n[1/4] Updating system packages...\n"
       bash "${SCRIPT_DIR}/omega-sysupdate.sh" || true
       
-      printf "\n[2/3] Applying kernel & network tuning...\n"
+      printf "\n[2/4] Applying kernel & network tuning...\n"
       bash "${SCRIPT_DIR}/omega-boost.sh" --apply || true
       
-      printf "\n[3/3] Applying operator compatibility booster...\n"
+      printf "\n[3/4] Applying operator compatibility booster...\n"
       bash "${SCRIPT_DIR}/omega-operator-fix.sh" --apply || true
+
+      printf "\n[4/4] Applying Instagram & video streaming optimizer...\n"
+      bash "${SCRIPT_DIR}/omega-instagram-fix.sh" --apply || true
       
-      printf "\n%s[SUCCESS] One-Click Optimization Completed!%s\n" "$C_G" "$C_0"
+      printf "\n%s[SUCCESS] Full Server Optimization Completed!%s\n" "$C_G" "$C_0"
       ;;
     *)
       printf "Aborted.\n"
@@ -186,17 +198,17 @@ main_menu() {
     printf "%s  [1]%s Run Read-Only Preflight Server Audit\n" "$C_G" "$C_0"
     printf "%s  [2]%s Apply Network & Kernel Tuning (BBR + FQ + sysctl)\n" "$C_G" "$C_0"
     printf "%s  [3]%s Apply Operator Compatibility Booster (Fix Samantel / Mobile MTU)\n" "$C_G" "$C_0"
-    printf "%s  [4]%s Update System & Install Essential Tools (curl, jq, sqlite3, htop)\n" "$C_G" "$C_0"
-    printf "%s  [5]%s %s★ ONE-CLICK FULL SERVER OPTIMIZATION (Steps 2 + 3 + 4)%s\n" "$C_Y" "$C_W" "$C_0" "$C_0"
-    printf "%s  [6]%s Recommended VLESS-Reality Setup on Free Port 443\n" "$C_G" "$C_0"
-    printf "%s  [7]%s Connection & Latency Diagnostics\n" "$C_G" "$C_0"
-    printf "%s  [8]%s Restore / Rollback Settings to Original State\n" "$C_M" "$C_0"
+    printf "%s  [4]%s Optimize Instagram & Video Streaming (Fix Reels/Story Stutter)\n" "$C_G" "$C_0"
+    printf "%s  [5]%s Update System & Install Essential Tools (curl, jq, sqlite3, htop)\n" "$C_G" "$C_0"
+    printf "%s  [6]%s %s★ ONE-CLICK FULL SERVER OPTIMIZATION (All of Above)%s\n" "$C_Y" "$C_W" "$C_0" "$C_0"
+    printf "%s  [7]%s Recommended VLESS-Reality Setup on Free Port 443\n" "$C_G" "$C_0"
+    printf "%s  [8]%s Connection & Latency Diagnostics\n" "$C_G" "$C_0"
+    printf "%s  [9]%s Restore / Rollback Settings to Original State\n" "$C_M" "$C_0"
     printf "%s  [0]%s Exit\n" "$C_R" "$C_0"
     printf "%s------------------------------------------------------------------------%s\n" "$C_B" "$C_0"
     
     local choice=""
-    if ! read -r -p "Please select an option [0-8]: " choice; then
-      # If read encounters EOF (non-interactive or broken pipe), exit cleanly
+    if ! read -r -p "Please select an option [0-9]: " choice; then
       printf "\nSession ended.\n"
       exit 0
     fi
@@ -246,20 +258,37 @@ main_menu() {
         ;;
       4)
         clear_screen
-        bash "${SCRIPT_DIR}/omega-sysupdate.sh" || true
+        printf "Select action for Instagram & Video Streaming Optimizer:\n"
+        printf "  [1] Apply Instagram Streaming Optimization\n"
+        printf "  [2] Show status\n"
+        printf "  [3] Rollback Instagram rules\n"
+        read -r -p "Choice [1-3]: " igchoice || igchoice=""
+        clear_screen
+        case "$igchoice" in
+          1) bash "${SCRIPT_DIR}/omega-instagram-fix.sh" --apply ;;
+          2) bash "${SCRIPT_DIR}/omega-instagram-fix.sh" --status ;;
+          3) bash "${SCRIPT_DIR}/omega-instagram-fix.sh" --rollback ;;
+          *) echo "Invalid choice." ;;
+        esac
         printf "\n"
         read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
       5)
-        run_one_click
+        clear_screen
+        bash "${SCRIPT_DIR}/omega-sysupdate.sh" || true
+        printf "\n"
+        read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
       6)
-        show_reality_guide
+        run_one_click
         ;;
       7)
-        run_diagnostics
+        show_reality_guide
         ;;
       8)
+        run_diagnostics
+        ;;
+      9)
         clear_screen
         printf "%s=== ROLLBACK ALL OMEGA-TUNNEL SETTINGS ===%s\n" "$C_M" "$C_0"
         read -r -p "Are you sure you want to restore original server settings? [y/N]: " confirm_rb || confirm_rb="n"
@@ -267,6 +296,7 @@ main_menu() {
           [yY]|[yY][eE][sS])
             bash "${SCRIPT_DIR}/omega-boost.sh" --rollback || true
             bash "${SCRIPT_DIR}/omega-operator-fix.sh" --rollback || true
+            bash "${SCRIPT_DIR}/omega-instagram-fix.sh" --rollback || true
             printf "\n%s[OK] All modifications rolled back cleanly.%s\n" "$C_G" "$C_0"
             ;;
           *)
@@ -282,7 +312,7 @@ main_menu() {
         exit 0
         ;;
       *)
-        printf "Invalid selection. Please choose between 0 and 8.\n"
+        printf "Invalid selection. Please choose between 0 and 9.\n"
         sleep 1
         ;;
     esac

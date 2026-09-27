@@ -42,6 +42,7 @@ SCRIPT_FILES=(
   "omega-menu.sh"
   "omega-boost.sh"
   "omega-operator-fix.sh"
+  "omega-instagram-fix.sh"
   "omega-sysupdate.sh"
   "omega-preflight.sh"
 )
