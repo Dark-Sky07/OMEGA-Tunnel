@@ -190,6 +190,30 @@ run_one_click() {
   read -r -p "Press [Enter] to return to main menu..." dummy || true
 }
 
+update_suite() {
+  clear_screen
+  printf "%s=== UPDATING OMEGA-TUNNEL SUITE ===%s\n\n" "$C_B" "$C_0"
+  printf "Fetching latest scripts from repository...\n"
+  
+  local raw_base="https://raw.githubusercontent.com/Dark-Sky07/OMEGA-Tunnel/arena/01a0d868-omega-tunnel/scripts"
+  local files=("omega-menu.sh" "omega-boost.sh" "omega-operator-fix.sh" "omega-instagram-fix.sh" "omega-sysupdate.sh" "omega-preflight.sh")
+  
+  for f in "${files[@]}"; do
+    printf "  Updating %s..." "$f"
+    if curl -fsSL "${raw_base}/${f}" -o "${SCRIPT_DIR}/${f}.tmp" 2>/dev/null; then
+      mv "${SCRIPT_DIR}/${f}.tmp" "${SCRIPT_DIR}/${f}"
+      chmod +x "${SCRIPT_DIR}/${f}"
+      printf " %s[OK]%s\n" "$C_G" "$C_0"
+    else
+      printf " %s[SKIPPED]%s\n" "$C_Y" "$C_0"
+    fi
+  done
+  
+  printf "\n%s[OK] Update complete! Reloading menu...%s\n" "$C_G" "$C_0"
+  sleep 1
+  exec bash "${SCRIPT_DIR}/omega-menu.sh"
+}
+
 main_menu() {
   while true; do
     clear_screen
@@ -204,16 +228,20 @@ main_menu() {
     printf "%s  [7]%s Recommended VLESS-Reality Setup on Free Port 443\n" "$C_G" "$C_0"
     printf "%s  [8]%s Connection & Latency Diagnostics\n" "$C_G" "$C_0"
     printf "%s  [9]%s Restore / Rollback Settings to Original State\n" "$C_M" "$C_0"
+    printf "%s  [u]%s %sUpdate OMEGA-Tunnel Suite to Latest Version%s\n" "$C_B" "$C_W" "$C_0" "$C_0"
     printf "%s  [0]%s Exit\n" "$C_R" "$C_0"
     printf "%s------------------------------------------------------------------------%s\n" "$C_B" "$C_0"
     
     local choice=""
-    if ! read -r -p "Please select an option [0-9]: " choice; then
+    if ! read -r -p "Please select an option [0-9 or u]: " choice; then
       printf "\nSession ended.\n"
       exit 0
     fi
 
     case "$choice" in
+      u|U)
+        update_suite
+        ;;
       1)
         clear_screen
         bash "${SCRIPT_DIR}/omega-preflight.sh" || true
