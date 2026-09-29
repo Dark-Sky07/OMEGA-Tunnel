@@ -48,6 +48,11 @@ SCRIPT_FILES=(
   "omega-cf-scanner.sh"
   "omega-monitor.sh"
   "omega-port-doctor.sh"
+  "omega-unban.sh"
+  "omega-watchdog.sh"
+  "omega-telegram.sh"
+  "omega-dns.sh"
+  "omega-bridge.sh"
   "omega-iran-probe.sh"
   "omega-sni-checker.sh"
   "omega-security.sh"
@@ -69,6 +74,8 @@ for file in "${SCRIPT_FILES[@]}"; do
       curl -fsSL "http://127.0.0.1:8000/${file}" -o "$target" 2>/dev/null || true
   fi
   chmod +x "$target"
+  # Also link to INSTALL_DIR directly so /opt/omega-boost/omega-*.sh resolves
+  ln -sf "$target" "${INSTALL_DIR}/${file}" 2>/dev/null || true
 done
 
 # Create global binary wrapper

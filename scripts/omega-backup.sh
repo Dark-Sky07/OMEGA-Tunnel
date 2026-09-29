@@ -78,6 +78,10 @@ create_backup() {
   ok "Backup created successfully!"
   printf "  File: %s%s%s (%s)\n" "$C_W" "$archive" "$C_0" "$arc_size"
   info "You can download this file via SFTP or restore it anytime with the Restore option."
+
+  if [ -f "/opt/omega-boost/omega-telegram.sh" ]; then
+    bash /opt/omega-boost/omega-telegram.sh send "💾 *Omega Backup Created!*%0AFile: \`$(basename "$archive")\` ($arc_size)" >/dev/null 2>&1 || true
+  fi
 }
 
 list_backups() {
