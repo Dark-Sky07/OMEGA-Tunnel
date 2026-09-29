@@ -89,7 +89,7 @@ get_operator_status() {
 }
 
 get_instagram_status() {
-  if [ -f "/opt/omega-boost/instagram-active.flag" ] || iptables -C OUTPUT -d "157.240.0.0/16" -p udp --dport 443 -j REJECT --reject-with icmp-port-unreachable >/dev/null 2>&1; then
+  if [ -f "/opt/omega-boost/instagram-meta-fix.active" ] || [ -f "/opt/omega-boost/instagram-active.flag" ] || iptables -C OUTPUT -d "157.240.0.0/16" -p udp --dport 443 -j REJECT --reject-with icmp-port-unreachable >/dev/null 2>&1; then
     printf "%sTargeted (Safe for WARP)%s" "$C_G" "$C_0"
   else
     printf "%sInactive%s" "$C_Y" "$C_0"

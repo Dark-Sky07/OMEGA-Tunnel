@@ -5,6 +5,7 @@
 #   Description: Google Captcha & ChatGPT unban with automated self-healing
 # ========================================================================
 
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
 set -u
 
 if [ -t 1 ]; then
@@ -28,8 +29,8 @@ notify_telegram() {
 
 check_google() {
   local res
-  res=$(curl -s4m 6 "https://www.google.com/search?q=hello+world" -A "Mozilla/5.0" || echo "")
-  if echo "$res" | grep -qi "sorry/index\|unusual traffic\|captcha"; then
+  res=$(curl -s4m 6 "https://www.google.com/search?q=omega+speedtest" -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0 Safari/537.36" 2>/dev/null || echo "")
+  if echo "$res" | grep -qi "sorry/index\|unusual traffic\|recaptcha"; then
     echo "CAPTCHA"
   elif [ -z "$res" ]; then
     echo "TIMEOUT"
@@ -39,31 +40,47 @@ check_google() {
 }
 
 check_openai() {
+  # Query official OpenAI API models endpoint
+  # 401 Unauthorized = IP accepted and valid (endpoint reached, just no API token) -> UNLOCKED
+  # 403 Forbidden = IP or Country blacklisted by OpenAI -> BLOCKED
+  # 000 = Connection timeout / network failure
   local code
-  code=$(curl -s4o /dev/null -w "%{http_code}" -m 6 "https://chatgpt.com/" -A "Mozilla/5.0" || echo "000")
-  if [ "$code" = "403" ] || [ "$code" = "429" ]; then
-    echo "BLOCKED"
-  elif [ "$code" = "200" ] || [ "$code" = "301" ] || [ "$code" = "302" ] || [ "$code" = "405" ]; then
+  code=$(curl -s4o /dev/null -w "%{http_code}" -m 6 "https://api.openai.com/v1/models" -A "Mozilla/5.0" 2>/dev/null || echo "000")
+
+  if [ "$code" = "401" ] || [ "$code" = "200" ]; then
     echo "UNLOCKED"
+  elif [ "$code" = "403" ]; then
+    echo "BLOCKED"
+  elif [ "$code" = "000" ]; then
+    echo "TIMEOUT"
   else
-    echo "UNKNOWN ($code)"
+    # Fallback to iOS chat app endpoint
+    local ios_code
+    ios_code=$(curl -s4o /dev/null -w "%{http_code}" -m 6 "https://ios.chat.openai.com/" -A "Mozilla/5.0" 2>/dev/null || echo "000")
+    if [ "$ios_code" = "401" ] || [ "$ios_code" = "200" ] || [ "$ios_code" = "302" ] || [ "$ios_code" = "301" ] || [ "$ios_code" = "404" ]; then
+      echo "UNLOCKED"
+    else
+      echo "BLOCKED ($code)"
+    fi
   fi
 }
 
 check_netflix() {
   local code
-  code=$(curl -s4o /dev/null -w "%{http_code}" -m 6 "https://www.netflix.com/title/80018499" -A "Mozilla/5.0" || echo "000")
-  if [ "$code" = "200" ]; then
-    echo "FULL_ORIGINALS"
+  code=$(curl -s4o /dev/null -w "%{http_code}" -m 6 "https://www.netflix.com/title/80018499" -A "Mozilla/5.0" 2>/dev/null || echo "000")
+  if [ "$code" = "200" ] || [ "$code" = "301" ] || [ "$code" = "302" ]; then
+    echo "UNLOCKED"
   elif [ "$code" = "403" ] || [ "$code" = "404" ]; then
     echo "BLOCKED"
+  elif [ "$code" = "000" ]; then
+    echo "TIMEOUT"
   else
-    echo "UNKNOWN ($code)"
+    echo "RESTRICTED ($code)"
   fi
 }
 
 check_warp_status() {
-  if ip link show | grep -qE "wgcf|warp|wg[0-9]"; then
+  if ip link show 2>/dev/null | grep -qE "wgcf|warp|wg[0-9]"; then
     echo "ACTIVE"
   elif command -v warp-cli >/dev/null 2>&1 && warp-cli status 2>/dev/null | grep -q "Connected"; then
     echo "ACTIVE"
@@ -100,10 +117,10 @@ run_diagnostics() {
   printf "Testing Netflix Streaming Status... "
   local n_stat
   n_stat=$(check_netflix)
-  if [ "$n_stat" = "FULL_ORIGINALS" ]; then
+  if [ "$n_stat" = "UNLOCKED" ]; then
     printf "%s[UNLOCKED]%s\n" "$C_G" "$C_0"
   elif [ "$n_stat" = "BLOCKED" ]; then
-    printf "%s[BLOCKED]%s\n" "$C_R" "$C_0"
+    printf "%s[BLOCKED / GEO-LOCKED]%s\n" "$C_R" "$C_0"
   else
     printf "%s[%s]%s\n" "$C_Y" "$n_stat" "$C_0"
   fi
@@ -116,12 +133,15 @@ run_diagnostics() {
   else
     printf "%s[NOT DETECTED / INACTIVE]%s\n" "$C_Y" "$C_0"
   fi
+
+  printf "\n"
+  read -r -p "Press [Enter] to return to menu..." _ || true
 }
 
 fix_unban() {
   printf "\n%s=== EXECUTING AUTOMATIC UNBAN & HEALING ===%s\n" "$C_B" "$C_0"
   
-  # Step 1: Force IPv4 Precedence (Fixes 90% of Google Captchas caused by dirty IPv6 ranges)
+  # Step 1: Force IPv4 Precedence (Fixes Google Captchas caused by dirty datacenter IPv6)
   printf "Step 1: Enforcing clean IPv4 resolver precedence... "
   if [ -f "$GAI_CONF" ]; then
     sed -i '/precedence ::ffff:0:0\/96/d' "$GAI_CONF"
@@ -144,21 +164,38 @@ fix_unban() {
     sleep 2
     warp-cli connect >/dev/null 2>&1 || true
     printf "%s[ROTATED FRESH IP]%s\n" "$C_G" "$C_0"
+  elif ip link show 2>/dev/null | grep -q "wgcf"; then
+    systemctl restart wg-quick@wgcf 2>/dev/null || true
+    printf "%s[RESTARTED WGCF]%s\n" "$C_G" "$C_0"
   else
-    printf "%s[SKIPPED (WARP not installed)]%s\n" "$C_Y" "$C_0"
+    printf "%s[WARP not active on server]%s\n" "$C_Y" "$C_0"
   fi
 
-  printf "\n%s[SUCCESS] Unban operations applied seamlessly without interrupting active clients!%s\n" "$C_G" "$C_0"
+  printf "\n%s[SUCCESS] Unban operations applied without restarting panel or disconnecting users!%s\n\n" "$C_G" "$C_0"
 
   # Re-verify
+  printf "Verifying status:\n"
   local new_google
   new_google=$(check_google)
   if [ "$new_google" = "CLEAN" ]; then
-    printf "  Google Captcha: %s[RESOLVED - NO CAPTCHA]%s\n" "$C_G" "$C_0"
+    printf "  * Google Captcha:  %s[RESOLVED - NO CAPTCHA]%s\n" "$C_G" "$C_0"
     notify_telegram "✅ *Google Captcha Auto-Healed!*%0AServer IPv4 precedence applied. Google search is now 100% clean."
   else
-    printf "  Google Captcha: %s[%s]%s\n" "$C_Y" "$new_google" "$C_0"
+    printf "  * Google Captcha:  %s[%s]%s\n" "$C_Y" "$new_google" "$C_0"
   fi
+
+  local new_openai
+  new_openai=$(check_openai)
+  if [ "$new_openai" = "UNLOCKED" ]; then
+    printf "  * OpenAI/ChatGPT:  %s[UNLOCKED / ACCESSIBLE]%s\n" "$C_G" "$C_0"
+  else
+    printf "  * OpenAI/ChatGPT:  %s[%s]%s\n" "$C_R" "$new_openai" "$C_0"
+    printf "\n%s[NOTE FOR CHATGPT]%s If your VPS datacenter IP is directly blacklisted by OpenAI,\n" "$C_Y" "$C_0"
+    printf "routing OpenAI traffic through Cloudflare WARP via your 3x-ui panel Outbounds is recommended.\n"
+  fi
+
+  printf "\n"
+  read -r -p "Press [Enter] to return to menu..." _ || true
 }
 
 install_daemon() {
@@ -197,14 +234,16 @@ EOF
 
   systemctl daemon-reload
   systemctl enable --now omega-unban.timer >/dev/null 2>&1
-  printf "%s[OK] Auto-Heal Daemon is active! Runs automatically every 30 minutes in background.%s\n" "$C_G" "$C_0"
+  printf "%s[OK] Auto-Heal Daemon is active! Runs automatically every 30 minutes in background.%s\n\n" "$C_G" "$C_0"
+  read -r -p "Press [Enter] to return to menu..." _ || true
 }
 
 remove_daemon() {
   systemctl disable --now omega-unban.timer >/dev/null 2>&1 || true
   rm -f "$SERVICE_FILE" "$TIMER_FILE"
   systemctl daemon-reload
-  printf "%s[OK] Auto-Heal Daemon removed.%s\n" "$C_G" "$C_0"
+  printf "%s[OK] Auto-Heal Daemon removed.%s\n\n" "$C_G" "$C_0"
+  read -r -p "Press [Enter] to return to menu..." _ || true
 }
 
 auto_heal_tick() {
