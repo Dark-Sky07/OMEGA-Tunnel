@@ -1,10 +1,11 @@
-# 👑 Omega VPS All In One Optimizer (Grand Master Suite)
+# 👑 Omega VPS All In One Optimizer (Elite Suite)
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Release-v3.0.0--GrandMaster-blue.svg?style=for-the-badge&logo=github" alt="Release v3.0.0" />
+  <img src="https://img.shields.io/badge/Release-v3.5.0--Elite-blue.svg?style=for-the-badge&logo=github" alt="Release v3.5.0" />
   <img src="https://img.shields.io/badge/OS-Ubuntu%20|%20Debian%20|%20CentOS-orange.svg?style=for-the-badge&logo=linux" alt="OS Support" />
   <img src="https://img.shields.io/badge/Panel%20Safety-100%25%20Untouched-success.svg?style=for-the-badge&logo=shield" alt="Panel Safety" />
-  <img src="https://img.shields.io/badge/Self--Healing-Watchdog%20%2B%20Auto--Unban-purple.svg?style=for-the-badge&logo=dependabot" alt="Self-Healing" />
+  <img src="https://img.shields.io/badge/Client%20Guard-Zero%20Drop%20Background-success.svg?style=for-the-badge&logo=android" alt="Client Guard" />
+  <img src="https://img.shields.io/badge/Scheduler-Peak%20Hour%20Combat-purple.svg?style=for-the-badge&logo=clock" alt="Peak Scheduler" />
   <img src="https://img.shields.io/badge/Language-100%25%20English%20TUI-informational.svg?style=for-the-badge" alt="English TUI" />
 </p>
 
@@ -61,7 +62,7 @@ omega
 
 ---
 
-## 🚀 نقشه کامل امکانات (۲۳ ابزار اختصاصی در یک منو)
+## 🚀 نقشه کامل امکانات (۲۶ ابزار اختصاصی در یک منو)
 
 ```text
   --- [ CORE & ONE-CLICK ] ---
@@ -72,30 +73,33 @@ omega
   [3]  Network & Kernel Tuning (BBR + FQ + sysctl buffer autotuning)
   [4]  Operator Compatibility Booster (Fix Samantel / Mobile PMTU Clamping)
   [5]  Optimize Instagram & Video Streaming (Safe for WARP & Google)
-  [6]  Reality SNI & Clean Domain Finder (Test best domains for Reality)
-  [7]  Cloudflare Clean IP Scanner (Find best low-latency CDN IPs)
-  [8]  Smart Anti-Pollution DNS Cache (High-speed zero-poisoning Anycast)
+  [6]  Client Battery & Persistent Connection Guard (Permanent Background Stay)
+  [7]  Iran Peak-Hours Smart Performance Scheduler (Auto-boost 20:00-01:30)
+  [8]  Domain & Subdomain Censor Health Checker (Test subscription & CDN domains)
+  [9]  Reality SNI & Clean Domain Finder (Test best domains for Reality)
+  [10] Cloudflare Clean IP Scanner (Find best low-latency CDN IPs)
+  [11] Smart Anti-Pollution DNS Cache (High-speed zero-poisoning Anycast)
 
   --- [ SYSTEM, HARDWARE & REPUTATION ] ---
-  [9]  System & Hardware Tuning (RAM, Ulimit 1M, Logs 200M)
-  [10] Smart Swap Memory Manager (Dynamic suggestions based on RAM)
-  [11] IP Reputation & Google/ChatGPT Unban Healer (Auto-Remediation)
-  [12] Security & Anti-Bruteforce Hardening (Fail2ban + Ping Shield)
-  [13] Panel & Disaster Recovery Backup (1-Click Backup & Restore)
-  [14] Automated Nightly Janitor Cronjob (Memory & Cache Cleaner)
-  [15] Update System Packages & Install Essential Tools
+  [12] System & Hardware Tuning (RAM, Ulimit 1M, Logs 200M)
+  [13] Smart Swap Memory Manager (Dynamic suggestions based on RAM)
+  [14] IP Reputation & Google/ChatGPT Unban Healer (Auto-Remediation)
+  [15] Security & Anti-Bruteforce Hardening (Fail2ban + Ping Shield)
+  [16] Panel & Disaster Recovery Backup (1-Click Backup & Restore)
+  [17] Automated Nightly Janitor Cronjob (Memory & Cache Cleaner)
+  [18] Update System Packages & Install Essential Tools
 
   --- [ SELF-HEALING & ALERTS ] ---
-  [16] 24/7 Panel & Xray Core Auto-Healing Watchdog (Zero-Downtime)
-  [17] Telegram Bot Instant Alerts (Crashes, Unbans, & Backups)
+  [19] 24/7 Panel & Xray Core Auto-Healing Watchdog (Zero-Downtime)
+  [20] Telegram Bot Instant Alerts (Crashes, Unbans, & Backups)
 
   --- [ MONITORING & DIAGNOSTICS ] ---
-  [18] Iran Operators Latency & Packet Loss Probe (19 targets across MCI/Irancell/ADSL)
-  [19] Iran-Foreign Tunnel & Bridge Health Doctor (Jitter & Packet Loss)
-  [20] VPS Bandwidth & Speedtest (Global & Regional Throughput)
-  [21] Live Connections & Traffic Monitor (Real-time MB/s & Clients)
-  [22] Port & Firewall Doctor (Scan ports & One-Click Port Opener)
-  [23] Recommended VLESS-Reality Setup on Free Port 443
+  [21] Iran Operators Latency & Packet Loss Probe (19 targets across MCI/Irancell/ADSL)
+  [22] Iran-Foreign Tunnel & Bridge Health Doctor (Jitter & Packet Loss)
+  [23] VPS Bandwidth & Speedtest (Global & Regional Throughput)
+  [24] Live Connections & Traffic Monitor (Real-time MB/s & Clients)
+  [25] Port & Firewall Doctor (Scan ports & One-Click Port Opener)
+  [26] Recommended VLESS-Reality Setup on Free Port 443
 
   --- [ MANAGEMENT ] ---
   [r]  Restore / Rollback Settings to Original State
@@ -107,16 +111,22 @@ omega
 
 ## 🔬 بررسی عمیق شاهکارهای فنی امگا
 
-### ۱. سگ نگهبان هوشمند ۲۴/۷ پنل و هسته اشعه (`omega-watchdog.sh`) 🐕
+### ۱. محافظت از باتری و پایداری دائمی اتصال در پس‌زمینه (`omega-client-opt.sh`) 📱🔋
+- **مشکل شایع:** اپراتورهای موبایل در ایران (ایرانسل و همراه اول) جدول NAT تهاجمی دارند و بعد از ۶۰ الی ۱۲۰ ثانیه بی‌تحرکی گوشی، اتصال سوکت را می‌بندند که باعث فریز شدن وی‌پی‌ان در پس‌زمینه می‌شود.
+- **تضمین امگا:** سرور پالس‌های نامحسوس Keepalive در فواصل ۱۲۰ ثانیه می‌فرستد تا جدول NAT اپراتور هرگز منقضی نشود.  
+- **تضمین قطع‌نشدن:** کانکشن کاربر **تا زمانی که خودش دستی قطع نکند، تا ابد باز و زنده می‌ماند** و هم‌زمان با الگوریتم FQ Pacing از روشن ماندن بیهوده آنتن رادیویی گوشی و مصرف باتری جلوگیری می‌کند.
+
+### ۲. زمان‌بند هوشمند ساعات اوج فیلترینگ ایران (`omega-scheduler.sh`) ⏰🌙
+- در ساعات اوج فیلترینگ در ایران (۲۰:۰۰ تا ۰۱:۳۰ به وقت تهران)، سرور به صورت خودکار به **حالت پیک بافرهای ۶۴ مگابایتی و ارسال مجدد سریع TCP** ارتقا می‌یابد تا ریزش پکت‌ها جبران شود و در ساعات آرام روز مجدداً به مصرف بهینه برمی‌گردد.
+
+### ۳. بررسی‌کننده وضعیت فیلترینگ دامنه‌ها و ساب‌دامنه‌ها (`omega-domain-checker.sh`) 📡🔍
+- تست آنی دامنه‌های سابسکریپشن و CDN روی سرورهای داخلی (همراه اول، ایرانسل و شکن) برای کشف پویزن شدن به صفحه پیوندها (`10.10.34.34`) یا بلاک شدن هندشیک SNI توسط DPI.
+
+### ۴. سگ نگهبان هوشمند ۲۴/۷ پنل و هسته اشعه (`omega-watchdog.sh`) 🐕
 - در صورت بروز کمبود حافظه یا حملات فیلترینگ که منجر به توقف ناگهانی پنل ۳ایکس‌یوآی یا هسته Xray شود، سگ نگهبان در کمتر از ۳ ثانیه سرویس را بدون نیاز به حضور ادمین زنده می‌کند.
-- تمام رخدادهای کراش در لاگ ذخیره شده و در صورت اتصال ربات تلگرام، هشدار فوری ارسال می‌شود.
 
-### ۲. آنلاکر خودکار گوگل و چت‌جی‌پی‌تی (`omega-unban.sh`) 🤖🔓
-- **چرا گوگل کپچا نشان می‌دهد؟** لینوکس به طور پیش‌فرض اولویت خروجی را به رنج‌های آلوده IPv6 دیتاسنترها می‌دهد.
-- **راهکار خودکار امگا:** با تنظیم اولویت استاندارد IPv4 در `/etc/gai.conf` و روتشین اتوماتیک سشن‌های Cloudflare WARP، کپچای گوگل و بن چت‌جی‌پی‌تی را به صورت خودکار در پس‌زمینه رفع می‌کند.
-
-### ۳. حل اختلال اپراتورهای سخت‌گیر (سامانتل، رایتل و شبکه سلولار) (`omega-operator-fix.sh`) 📶
-- شبکه اپراتور سامانتل و برخی دکل‌های LTE به دلیل سربرگ‌های اضافی encapsulation پکت‌های بزرگتر از MTU را بدون ارسال پیام ICMP Fragmentation Needed رها می‌کنند (اصطلاحاً Path MTU Blackhole).
+### ۵. آنلاکر خودکار گوگل و چت‌جی‌پی‌تی (`omega-unban.sh`) 🤖🔓
+- تست استاندارد با اندپوینت‌های رسمی OpenAI (`api.openai.com/v1/models`) و اولویت استاندارد IPv4 در `/etc/gai.conf` برای حل ریشه‌ای ربات‌سنج گوگل.
 - امگا با اعمال قانون هوشمند `--clamp-mss-to-pmtu` در جدول `POSTROUTING`، سقف اندازه پکت‌های TCP را دقیقاً مطابق با سقف مجاز مسیر کلاینت تراز می‌کند و مشکل فریز شدن یا لود نشدن کانفیگ‌ها را ۱۰۰٪ روی سرور حل می‌کند.
 
 ### ۴. شتاب‌دهنده ویدیو و اینستاگرام سازگار با وارپ (`omega-instagram-fix.sh`) 📸

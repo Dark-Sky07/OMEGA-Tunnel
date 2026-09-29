@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #===============================================================================
 #  omega — Omega VPS All In One Optimizer Interactive TUI Menu
-#  Version: 3.0.0 (Grand Master Edition)
+#  Version: 3.5.0 (Elite Anti-Censorship Edition)
 #
 #  100% English Terminal Output to guarantee pristine rendering across all
 #  SSH clients, mobile terminals (Termius, JuiceSSH), and web consoles.
@@ -10,7 +10,7 @@
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
 set -u
 
-VERSION="3.1.0"
+VERSION="3.5.0"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 [ -f "${SCRIPT_DIR}/omega-watchdog.sh" ] || SCRIPT_DIR="/opt/omega-boost/scripts"
 [ -f "${SCRIPT_DIR}/omega-watchdog.sh" ] || SCRIPT_DIR="/opt/omega-boost"
@@ -120,6 +120,26 @@ get_unban_status() {
   fi
 }
 
+get_client_opt_status() {
+  if [ -f "/opt/omega-boost/client-opt.active" ]; then
+    printf "%sGuarded (Permanent)%s" "$C_G" "$C_0"
+  else
+    printf "%sDefault%s" "$C_Y" "$C_0"
+  fi
+}
+
+get_scheduler_status() {
+  local state
+  state=$(cat "/opt/omega-boost/scheduler.state" 2>/dev/null || echo "BALANCED")
+  if systemctl is-active --quiet omega-scheduler.timer 2>/dev/null; then
+    printf "%sAuto (%s)%s" "$C_G" "$state" "$C_0"
+  elif [ "$state" = "PEAK" ]; then
+    printf "%sPeak (64MB)%s" "$C_G" "$C_0"
+  else
+    printf "%sManual%s" "$C_Y" "$C_0"
+  fi
+}
+
 get_swap_status() {
   local swap_kb
   swap_kb="$(awk '/SwapTotal/ {print $2}' /proc/meminfo 2>/dev/null || echo "0")"
@@ -166,13 +186,14 @@ draw_header() {
   printf "%s     \_/  |_|   |____/   \___/| .__/ \__|_|_| |_| |_|_/___\___|_|  %s\n" "$C_B" "$C_0"
   printf "%s                              |_|                                  %s\n" "$C_B" "$C_0"
   printf "                   %sAll In One Server Suite%s\n" "$C_W" "$C_0"
-  printf "                         Version %s (Grand Master)\n" "$VERSION"
+  printf "                         Version %s (Elite)\n" "$VERSION"
   printf "%s========================================================================%s\n" "$C_B" "$C_0"
   
   printf "  Server Panel:      %-30b  Kernel CC:     %b\n" "$(get_panel_status)" "$(get_bbr_status)"
   printf "  Operator Fix:      %-30b  Memory:        %s\n" "$(get_operator_status)" "${mem_info:-unknown}"
   printf "  Instagram Stream:  %-30b  Swap Memory:   %b\n" "$(get_instagram_status)" "$(get_swap_status)"
   printf "  Watchdog Guard:    %-30b  Unban Healer:  %b\n" "$(get_watchdog_status)" "$(get_unban_status)"
+  printf "  Client Keepalive:  %-30b  Peak Scheduler:%b\n" "$(get_client_opt_status)" "$(get_scheduler_status)"
   printf "  Security Guard:    %-30b  TCP 443:       %b\n" "$(get_security_status)" "$(get_port_status 443 tcp)"
   printf "%s------------------------------------------------------------------------%s\n" "$C_B" "$C_0"
 }
@@ -209,45 +230,53 @@ run_one_click() {
   printf "  1. Network & Kernel Tuning (BBR + FQ + sysctl buffer tuning)\n"
   printf "  2. Operator Compatibility Booster (Samantel/Mobile PMTU Clamping)\n"
   printf "  3. Instagram & Streaming Optimizer (Targeted QUIC Rejection + fast TCP)\n"
-  printf "  4. Smart Anti-Pollution DNS Cache & Anycast Resolvers\n"
-  printf "  5. System & Hardware Tuning (1M ulimit, swappiness=10, 200M logs)\n"
-  printf "  6. Security Hardening (Fail2ban anti-bruteforce + ping rate limit)\n"
-  printf "  7. IP Reputation & Google Captcha Auto-Unban Healer Daemon\n"
-  printf "  8. 24/7 Panel & Xray Auto-Healing Watchdog Daemon\n"
-  printf "  9. Automated Nightly Janitor Cronjob (daily cache & log cleaner at 04:00 AM)\n"
-  printf " 10. Essential Package Maintenance (curl, jq, sqlite3, htop)\n\n"
+  printf "  4. Client Battery & Persistent Background Connection Guard\n"
+  printf "  5. Iran Peak-Hours Smart Scheduler (Auto Peak/Balanced buffer mode)\n"
+  printf "  6. Smart Anti-Pollution DNS Cache & Anycast Resolvers\n"
+  printf "  7. System & Hardware Tuning (1M ulimit, swappiness=10, 200M logs)\n"
+  printf "  8. Security Hardening (Fail2ban anti-bruteforce + ping rate limit)\n"
+  printf "  9. IP Reputation & Google Captcha Auto-Unban Healer Daemon\n"
+  printf " 10. 24/7 Panel & Xray Auto-Healing Watchdog Daemon\n"
+  printf " 11. Automated Nightly Janitor Cronjob (daily cache & log cleaner at 04:00 AM)\n"
+  printf " 12. Essential Package Maintenance (curl, jq, sqlite3, htop)\n\n"
   
   read -r -p "Do you want to proceed? [y/N]: " confirm || confirm="n"
   case "$confirm" in
     [yY]|[yY][eE][sS])
-      printf "\n[1/10] Applying kernel & network tuning...\n"
+      printf "\n[1/12] Applying kernel & network tuning...\n"
       run_subscript "omega-boost.sh" --apply || true
       
-      printf "\n[2/10] Applying operator compatibility booster...\n"
+      printf "\n[2/12] Applying operator compatibility booster...\n"
       run_subscript "omega-operator-fix.sh" --apply || true
 
-      printf "\n[3/10] Applying Instagram & video streaming optimizer...\n"
+      printf "\n[3/12] Applying Instagram & video streaming optimizer...\n"
       run_subscript "omega-instagram-fix.sh" --apply || true
 
-      printf "\n[4/10] Applying smart anti-pollution DNS cache...\n"
+      printf "\n[4/12] Applying client battery & persistent background connection guard...\n"
+      run_subscript "omega-client-opt.sh" apply || true
+
+      printf "\n[5/12] Activating Iran peak-hours performance scheduler...\n"
+      run_subscript "omega-scheduler.sh" enable || true
+
+      printf "\n[6/12] Applying smart anti-pollution DNS cache...\n"
       run_subscript "omega-dns.sh" apply || true
 
-      printf "\n[5/10] Applying system hardware, RAM, ulimit, & logs tuning...\n"
+      printf "\n[7/12] Applying system hardware, RAM, ulimit, & logs tuning...\n"
       run_subscript "omega-hardware-opt.sh" --all || true
 
-      printf "\n[6/10] Applying security hardening & Fail2ban...\n"
+      printf "\n[8/12] Applying security hardening & Fail2ban...\n"
       run_subscript "omega-security.sh" --apply || true
 
-      printf "\n[7/10] Activating background Google/ChatGPT auto-unban daemon...\n"
+      printf "\n[9/12] Activating background Google/ChatGPT auto-unban daemon...\n"
       run_subscript "omega-unban.sh" enable || true
 
-      printf "\n[8/10] Enabling 24/7 panel & Xray auto-healing watchdog...\n"
+      printf "\n[10/12] Enabling 24/7 panel & Xray auto-healing watchdog...\n"
       run_subscript "omega-watchdog.sh" enable || true
 
-      printf "\n[9/10] Scheduling nightly janitor maintenance...\n"
+      printf "\n[11/12] Scheduling nightly janitor maintenance...\n"
       run_subscript "omega-cron.sh" --enable || true
 
-      printf "\n[10/10] Updating essential system packages...\n"
+      printf "\n[12/12] Updating essential system packages...\n"
       run_subscript "omega-sysupdate.sh" || true
       
       printf "\n%s[SUCCESS] Full Server Optimization Completed!%s\n" "$C_G" "$C_0"
@@ -283,30 +312,33 @@ main_menu() {
     printf "  %s[3]%s  Network & Kernel Tuning (BBR + FQ + sysctl)\n" "$C_G" "$C_0"
     printf "  %s[4]%s  Operator Compatibility Booster (Fix Samantel / Mobile MTU)\n" "$C_G" "$C_0"
     printf "  %s[5]%s  Optimize Instagram & Video Streaming (Safe for WARP & Google)\n" "$C_G" "$C_0"
-    printf "  %s[6]%s  Reality SNI & Clean Domain Finder (Test best domains for Reality)\n" "$C_G" "$C_0"
-    printf "  %s[7]%s  Cloudflare Clean IP Scanner (Find best low-latency CDN IPs)\n" "$C_G" "$C_0"
-    printf "  %s[8]%s  Smart Anti-Pollution DNS Cache (High-speed zero-poisoning Anycast)\n\n" "$C_G" "$C_0"
+    printf "  %s[6]%s  Client Battery & Persistent Connection Guard (Permanent Background Stay)\n" "$C_G" "$C_0"
+    printf "  %s[7]%s  Iran Peak-Hours Smart Performance Scheduler (Auto-boost 20:00-01:30)\n" "$C_G" "$C_0"
+    printf "  %s[8]%s  Domain & Subdomain Censor Health Checker (Test subscription & CDN domains)\n" "$C_G" "$C_0"
+    printf "  %s[9]%s  Reality SNI & Clean Domain Finder (Test best domains for Reality)\n" "$C_G" "$C_0"
+    printf "  %s[10]%s Cloudflare Clean IP Scanner (Find best low-latency CDN IPs)\n" "$C_G" "$C_0"
+    printf "  %s[11]%s Smart Anti-Pollution DNS Cache (High-speed zero-poisoning Anycast)\n\n" "$C_G" "$C_0"
 
     printf "  %s--- [ SYSTEM, HARDWARE & REPUTATION ] ---%s\n" "$C_C" "$C_0"
-    printf "  %s[9]%s  System & Hardware Tuning (RAM, Ulimit 1M, Logs 200M)\n" "$C_G" "$C_0"
-    printf "  %s[10]%s Smart Swap Memory Manager (Dynamic suggestions based on RAM)\n" "$C_G" "$C_0"
-    printf "  %s[11]%s IP Reputation & Google/ChatGPT Unban Healer (Auto-Remediation)\n" "$C_G" "$C_0"
-    printf "  %s[12]%s Security & Anti-Bruteforce Hardening (Fail2ban + Ping Shield)\n" "$C_G" "$C_0"
-    printf "  %s[13]%s Panel & Disaster Recovery Backup (1-Click Backup & Restore)\n" "$C_G" "$C_0"
-    printf "  %s[14]%s Automated Nightly Janitor Cronjob (Memory & Cache Cleaner)\n" "$C_G" "$C_0"
-    printf "  %s[15]%s Update System Packages & Install Essential Tools\n\n" "$C_G" "$C_0"
+    printf "  %s[12]%s System & Hardware Tuning (RAM, Ulimit 1M, Logs 200M)\n" "$C_G" "$C_0"
+    printf "  %s[13]%s Smart Swap Memory Manager (Dynamic suggestions based on RAM)\n" "$C_G" "$C_0"
+    printf "  %s[14]%s IP Reputation & Google/ChatGPT Unban Healer (Auto-Remediation)\n" "$C_G" "$C_0"
+    printf "  %s[15]%s Security & Anti-Bruteforce Hardening (Fail2ban + Ping Shield)\n" "$C_G" "$C_0"
+    printf "  %s[16]%s Panel & Disaster Recovery Backup (1-Click Backup & Restore)\n" "$C_G" "$C_0"
+    printf "  %s[17]%s Automated Nightly Janitor Cronjob (Memory & Cache Cleaner)\n" "$C_G" "$C_0"
+    printf "  %s[18]%s Update System Packages & Install Essential Tools\n\n" "$C_G" "$C_0"
 
     printf "  %s--- [ SELF-HEALING & ALERTS ] ---%s\n" "$C_C" "$C_0"
-    printf "  %s[16]%s 24/7 Panel & Xray Core Auto-Healing Watchdog (Zero-Downtime)\n" "$C_G" "$C_0"
-    printf "  %s[17]%s Telegram Bot Instant Alerts (Crashes, Unbans, & Backups)\n\n" "$C_G" "$C_0"
+    printf "  %s[19]%s 24/7 Panel & Xray Core Auto-Healing Watchdog (Zero-Downtime)\n" "$C_G" "$C_0"
+    printf "  %s[20]%s Telegram Bot Instant Alerts (Crashes, Unbans, & Backups)\n\n" "$C_G" "$C_0"
 
     printf "  %s--- [ MONITORING & DIAGNOSTICS ] ---%s\n" "$C_C" "$C_0"
-    printf "  %s[18]%s Iran Operators Latency & Packet Loss Probe (19 targets)\n" "$C_G" "$C_0"
-    printf "  %s[19]%s Iran-Foreign Tunnel & Bridge Health Doctor (Jitter & Loss)\n" "$C_G" "$C_0"
-    printf "  %s[20]%s VPS Bandwidth & Speedtest (Global & Regional Throughput)\n" "$C_G" "$C_0"
-    printf "  %s[21]%s Live Connections & Traffic Monitor (Real-time MB/s & Clients)\n" "$C_G" "$C_0"
-    printf "  %s[22]%s Port & Firewall Doctor (Scan ports & One-Click Port Opener)\n" "$C_G" "$C_0"
-    printf "  %s[23]%s Recommended VLESS-Reality Setup on Free Port 443\n\n" "$C_G" "$C_0"
+    printf "  %s[21]%s Iran Operators Latency & Packet Loss Probe (19 targets)\n" "$C_G" "$C_0"
+    printf "  %s[22]%s Iran-Foreign Tunnel & Bridge Health Doctor (Jitter & Loss)\n" "$C_G" "$C_0"
+    printf "  %s[23]%s VPS Bandwidth & Speedtest (Global & Regional Throughput)\n" "$C_G" "$C_0"
+    printf "  %s[24]%s Live Connections & Traffic Monitor (Real-time MB/s & Clients)\n" "$C_G" "$C_0"
+    printf "  %s[25]%s Port & Firewall Doctor (Scan ports & One-Click Port Opener)\n" "$C_G" "$C_0"
+    printf "  %s[26]%s Recommended VLESS-Reality Setup on Free Port 443\n\n" "$C_G" "$C_0"
 
     printf "  %s--- [ MANAGEMENT ] ---%s\n" "$C_C" "$C_0"
     printf "  %s[r]%s  Restore / Rollback Settings to Original State\n" "$C_M" "$C_0"
@@ -375,21 +407,33 @@ main_menu() {
         ;;
       6)
         clear_screen
+        run_subscript "omega-client-opt.sh"
+        ;;
+      7)
+        clear_screen
+        run_subscript "omega-scheduler.sh"
+        ;;
+      8)
+        clear_screen
+        run_subscript "omega-domain-checker.sh"
+        ;;
+      9)
+        clear_screen
         run_subscript "omega-sni-checker.sh"
         printf "\n"
         read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
-      7)
+      10)
         clear_screen
         run_subscript "omega-cf-scanner.sh"
         printf "\n"
         read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
-      8)
+      11)
         clear_screen
         run_subscript "omega-dns.sh"
         ;;
-      9)
+      12)
         clear_screen
         printf "%s=== System & Hardware Tuning ===%s\n\n" "$C_B" "$C_0"
         printf "  %s[1]%s Apply all hardware optimizations (Ulimit 1M, VM swappiness=10, 200M logs)\n" "$C_G" "$C_0"
@@ -405,15 +449,15 @@ main_menu() {
           *) echo "Invalid choice."; sleep 1 ;;
         esac
         ;;
-      10)
+      13)
         clear_screen
         run_subscript "omega-hardware-opt.sh" --swap
         ;;
-      11)
+      14)
         clear_screen
         run_subscript "omega-unban.sh"
         ;;
-      12)
+      15)
         clear_screen
         printf "%s=== Security & Anti-Bruteforce Hardening ===%s\n\n" "$C_B" "$C_0"
         printf "  %s[1]%s Apply Fail2ban & ICMP Ping Shield\n" "$C_G" "$C_0"
@@ -429,7 +473,7 @@ main_menu() {
           *) echo "Invalid choice."; sleep 1 ;;
         esac
         ;;
-      13)
+      16)
         clear_screen
         printf "%s=== Panel Disaster Recovery & Backup Manager ===%s\n\n" "$C_B" "$C_0"
         printf "  %s[1]%s Create New Panel Backup (Database & Certs)\n" "$C_G" "$C_0"
@@ -445,7 +489,7 @@ main_menu() {
           *) echo "Invalid choice."; sleep 1 ;;
         esac
         ;;
-      14)
+      17)
         clear_screen
         printf "%s=== Automated Nightly Memory Janitor Cronjob ===%s\n\n" "$C_B" "$C_0"
         printf "  %s[1]%s Enable Nightly Janitor (Daily at 04:00 AM)\n" "$C_G" "$C_0"
@@ -463,41 +507,41 @@ main_menu() {
           *) echo "Invalid choice."; sleep 1 ;;
         esac
         ;;
-      15)
+      18)
         clear_screen
         run_subscript "omega-sysupdate.sh" || true
         printf "\n"
         read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
-      16)
+      19)
         clear_screen
         run_subscript "omega-watchdog.sh"
         ;;
-      17)
+      20)
         clear_screen
         run_subscript "omega-telegram.sh"
         ;;
-      18)
+      21)
         clear_screen
         run_subscript "omega-iran-probe.sh"
         printf "\n"
         read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
-      19)
+      22)
         clear_screen
         run_subscript "omega-bridge.sh"
         ;;
-      20)
+      23)
         clear_screen
         run_subscript "omega-speedtest.sh"
         printf "\n"
         read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
-      21)
+      24)
         clear_screen
         run_subscript "omega-monitor.sh"
         ;;
-      22)
+      25)
         clear_screen
         printf "%s=== Port & Firewall Doctor ===%s\n\n" "$C_B" "$C_0"
         printf "  %s[1]%s Scan Critical VPN & Web Ports\n" "$C_G" "$C_0"
@@ -511,7 +555,7 @@ main_menu() {
           *) echo "Invalid choice."; sleep 1 ;;
         esac
         ;;
-      23)
+      26)
         show_reality_guide
         ;;
       r|R)
@@ -523,6 +567,8 @@ main_menu() {
             run_subscript "omega-boost.sh" --rollback || true
             run_subscript "omega-operator-fix.sh" --rollback || true
             run_subscript "omega-instagram-fix.sh" --rollback || true
+            run_subscript "omega-client-opt.sh" rollback || true
+            run_subscript "omega-scheduler.sh" disable || true
             run_subscript "omega-hardware-opt.sh" --rollback || true
             run_subscript "omega-security.sh" --rollback || true
             run_subscript "omega-cron.sh" --disable || true
