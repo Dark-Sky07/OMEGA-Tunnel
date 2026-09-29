@@ -52,6 +52,7 @@ SCRIPT_FILES=(
   "omega-monitor.sh"
   "omega-port-doctor.sh"
   "omega-unban.sh"
+  "omega-iran-unlocker.sh"
   "omega-watchdog.sh"
   "omega-telegram.sh"
   "omega-dns.sh"

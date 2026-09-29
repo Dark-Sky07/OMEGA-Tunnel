@@ -1,11 +1,11 @@
-# 👑 Omega VPS All In One Optimizer (Elite Suite)
+# 👑 Omega VPS All In One Optimizer (Supreme Edition)
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Release-v3.5.0--Elite-blue.svg?style=for-the-badge&logo=github" alt="Release v3.5.0" />
+  <img src="https://img.shields.io/badge/Release-v4.0.0--Supreme-blue.svg?style=for-the-badge&logo=github" alt="Release v4.0.0" />
   <img src="https://img.shields.io/badge/OS-Ubuntu%20|%20Debian%20|%20CentOS-orange.svg?style=for-the-badge&logo=linux" alt="OS Support" />
   <img src="https://img.shields.io/badge/Panel%20Safety-100%25%20Untouched-success.svg?style=for-the-badge&logo=shield" alt="Panel Safety" />
+  <img src="https://img.shields.io/badge/Iran%20Server-Docker%20%2B%20APT%20%2B%20GitHub%20Speedup-orange.svg?style=for-the-badge&logo=docker" alt="Iran Server Booster" />
   <img src="https://img.shields.io/badge/Client%20Guard-Zero%20Drop%20Background-success.svg?style=for-the-badge&logo=android" alt="Client Guard" />
-  <img src="https://img.shields.io/badge/Scheduler-Peak%20Hour%20Combat-purple.svg?style=for-the-badge&logo=clock" alt="Peak Scheduler" />
   <img src="https://img.shields.io/badge/Language-100%25%20English%20TUI-informational.svg?style=for-the-badge" alt="English TUI" />
 </p>
 
@@ -62,7 +62,7 @@ omega
 
 ---
 
-## 🚀 نقشه کامل امکانات (۲۶ ابزار اختصاصی در یک منو)
+## 🚀 نقشه کامل امکانات (۲۷ ابزار اختصاصی در یک منو)
 
 ```text
   --- [ CORE & ONE-CLICK ] ---
@@ -84,22 +84,23 @@ omega
   [12] System & Hardware Tuning (RAM, Ulimit 1M, Logs 200M)
   [13] Smart Swap Memory Manager (Dynamic suggestions based on RAM)
   [14] IP Reputation & Google/ChatGPT Unban Healer (Auto-Remediation)
-  [15] Security & Anti-Bruteforce Hardening (Fail2ban + Ping Shield)
-  [16] Panel & Disaster Recovery Backup (1-Click Backup & Restore)
-  [17] Automated Nightly Janitor Cronjob (Memory & Cache Cleaner)
-  [18] Update System Packages & Install Essential Tools
+  [15] Iran Server Sanctions & Download Booster (Fix Docker 403, APT, GitHub)
+  [16] Security & Anti-Bruteforce Hardening (Fail2ban + Ping Shield)
+  [17] Panel & Disaster Recovery Backup (1-Click Backup & Restore)
+  [18] Automated Nightly Janitor Cronjob (Memory & Cache Cleaner)
+  [19] Update System Packages & Install Essential Tools
 
   --- [ SELF-HEALING & ALERTS ] ---
-  [19] 24/7 Panel & Xray Core Auto-Healing Watchdog (Zero-Downtime)
-  [20] Telegram Bot Instant Alerts (Crashes, Unbans, & Backups)
+  [20] 24/7 Panel & Xray Core Auto-Healing Watchdog (Zero-Downtime)
+  [21] Telegram Bot Instant Alerts (Crashes, Unbans, & Backups)
 
   --- [ MONITORING & DIAGNOSTICS ] ---
-  [21] Iran Operators Latency & Packet Loss Probe (19 targets across MCI/Irancell/ADSL)
-  [22] Iran-Foreign Tunnel & Bridge Health Doctor (Jitter & Packet Loss)
-  [23] VPS Bandwidth & Speedtest (Global & Regional Throughput)
-  [24] Live Connections & Traffic Monitor (Real-time MB/s & Clients)
-  [25] Port & Firewall Doctor (Scan ports & One-Click Port Opener)
-  [26] Recommended VLESS-Reality Setup on Free Port 443
+  [22] Iran Operators Latency & Packet Loss Probe (19 targets across MCI/Irancell/ADSL)
+  [23] Iran-Foreign Tunnel & Bridge Health Doctor (Jitter & Packet Loss)
+  [24] VPS Bandwidth & Speedtest (Global & Regional Throughput)
+  [25] Live Connections & Traffic Monitor (Real-time MB/s & Clients)
+  [26] Port & Firewall Doctor (Scan ports & One-Click Port Opener)
+  [27] Recommended VLESS-Reality Setup on Free Port 443
 
   --- [ MANAGEMENT ] ---
   [r]  Restore / Rollback Settings to Original State
@@ -119,8 +120,11 @@ omega
 ### ۲. زمان‌بند هوشمند ساعات اوج فیلترینگ ایران (`omega-scheduler.sh`) ⏰🌙
 - در ساعات اوج فیلترینگ در ایران (۲۰:۰۰ تا ۰۱:۳۰ به وقت تهران)، سرور به صورت خودکار به **حالت پیک بافرهای ۶۴ مگابایتی و ارسال مجدد سریع TCP** ارتقا می‌یابد تا ریزش پکت‌ها جبران شود و در ساعات آرام روز مجدداً به مصرف بهینه برمی‌گردد.
 
-### ۳. بررسی‌کننده وضعیت فیلترینگ دامنه‌ها و ساب‌دامنه‌ها (`omega-domain-checker.sh`) 📡🔍
-- تست آنی دامنه‌های سابسکریپشن و CDN روی سرورهای داخلی (همراه اول، ایرانسل و شکن) برای کشف پویزن شدن به صفحه پیوندها (`10.10.34.34`) یا بلاک شدن هندشیک SNI توسط DPI.
+### ۳. شتاب‌دهنده سرور ایران، رفع تحریم داکر و مخازن (`omega-iran-unlocker.sh`) 🇮🇷⚡
+- **رفع خطای ۴۰۳ داکر (Docker Hub):** تزریق خودکار میرورهای داخلی و ضدتحریم معتبر (`arvancloud`, `iranserver`, `registry.docker.ir`) در `/etc/docker/daemon.json` بدون نیاز به وی‌پی‌ان یا پراکسی دستی.
+- **شتاب‌دهنده مخازن APT با سرعت ۱۰۰ مگابایت بر ثانیه:** تعویض هوشمند سرورهای آپدیت کند اوبونتو/دبیان با پرسرعت‌ترین سرورهای میرور داخلی ایران (کاهش زمان `apt update` و `apt upgrade` به زیر ۱۰ ثانیه).
+- **رفع آلودگی دی‌ان‌اس و شتاب‌دهنده گیت‌هاب:** تزریق مستقیم آی‌پی‌های Anycast پاک در `/etc/hosts` برای حل فیلترینگ و پویزن بودن `raw.githubusercontent.com` و است‌های ریلیز گیت‌هاب.
+- **دی‌ان‌اس ضدتحریم (شکن و ۴۰۳):** تنظیم خودکار Anycastهای تحریم‌شکن برای دانلود روان پکیج‌های پایتون، نود، داکر و گوگل کلود.
 
 ### ۴. سگ نگهبان هوشمند ۲۴/۷ پنل و هسته اشعه (`omega-watchdog.sh`) 🐕
 - در صورت بروز کمبود حافظه یا حملات فیلترینگ که منجر به توقف ناگهانی پنل ۳ایکس‌یوآی یا هسته Xray شود، سگ نگهبان در کمتر از ۳ ثانیه سرویس را بدون نیاز به حضور ادمین زنده می‌کند.

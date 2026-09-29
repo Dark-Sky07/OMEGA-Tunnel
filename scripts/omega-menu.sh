@@ -10,7 +10,7 @@
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
 set -u
 
-VERSION="3.5.0"
+VERSION="4.0.0"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 [ -f "${SCRIPT_DIR}/omega-watchdog.sh" ] || SCRIPT_DIR="/opt/omega-boost/scripts"
 [ -f "${SCRIPT_DIR}/omega-watchdog.sh" ] || SCRIPT_DIR="/opt/omega-boost"
@@ -323,22 +323,23 @@ main_menu() {
     printf "  %s[12]%s System & Hardware Tuning (RAM, Ulimit 1M, Logs 200M)\n" "$C_G" "$C_0"
     printf "  %s[13]%s Smart Swap Memory Manager (Dynamic suggestions based on RAM)\n" "$C_G" "$C_0"
     printf "  %s[14]%s IP Reputation & Google/ChatGPT Unban Healer (Auto-Remediation)\n" "$C_G" "$C_0"
-    printf "  %s[15]%s Security & Anti-Bruteforce Hardening (Fail2ban + Ping Shield)\n" "$C_G" "$C_0"
-    printf "  %s[16]%s Panel & Disaster Recovery Backup (1-Click Backup & Restore)\n" "$C_G" "$C_0"
-    printf "  %s[17]%s Automated Nightly Janitor Cronjob (Memory & Cache Cleaner)\n" "$C_G" "$C_0"
-    printf "  %s[18]%s Update System Packages & Install Essential Tools\n\n" "$C_G" "$C_0"
+    printf "  %s[15]%s Iran Server Sanctions & Download Booster (Docker 403, APT, GitHub)\n" "$C_G" "$C_0"
+    printf "  %s[16]%s Security & Anti-Bruteforce Hardening (Fail2ban + Ping Shield)\n" "$C_G" "$C_0"
+    printf "  %s[17]%s Panel & Disaster Recovery Backup (1-Click Backup & Restore)\n" "$C_G" "$C_0"
+    printf "  %s[18]%s Automated Nightly Janitor Cronjob (Memory & Cache Cleaner)\n" "$C_G" "$C_0"
+    printf "  %s[19]%s Update System Packages & Install Essential Tools\n\n" "$C_G" "$C_0"
 
     printf "  %s--- [ SELF-HEALING & ALERTS ] ---%s\n" "$C_C" "$C_0"
-    printf "  %s[19]%s 24/7 Panel & Xray Core Auto-Healing Watchdog (Zero-Downtime)\n" "$C_G" "$C_0"
-    printf "  %s[20]%s Telegram Bot Instant Alerts (Crashes, Unbans, & Backups)\n\n" "$C_G" "$C_0"
+    printf "  %s[20]%s 24/7 Panel & Xray Core Auto-Healing Watchdog (Zero-Downtime)\n" "$C_G" "$C_0"
+    printf "  %s[21]%s Telegram Bot Instant Alerts (Crashes, Unbans, & Backups)\n\n" "$C_G" "$C_0"
 
     printf "  %s--- [ MONITORING & DIAGNOSTICS ] ---%s\n" "$C_C" "$C_0"
-    printf "  %s[21]%s Iran Operators Latency & Packet Loss Probe (19 targets)\n" "$C_G" "$C_0"
-    printf "  %s[22]%s Iran-Foreign Tunnel & Bridge Health Doctor (Jitter & Loss)\n" "$C_G" "$C_0"
-    printf "  %s[23]%s VPS Bandwidth & Speedtest (Global & Regional Throughput)\n" "$C_G" "$C_0"
-    printf "  %s[24]%s Live Connections & Traffic Monitor (Real-time MB/s & Clients)\n" "$C_G" "$C_0"
-    printf "  %s[25]%s Port & Firewall Doctor (Scan ports & One-Click Port Opener)\n" "$C_G" "$C_0"
-    printf "  %s[26]%s Recommended VLESS-Reality Setup on Free Port 443\n\n" "$C_G" "$C_0"
+    printf "  %s[22]%s Iran Operators Latency & Packet Loss Probe (19 targets)\n" "$C_G" "$C_0"
+    printf "  %s[23]%s Iran-Foreign Tunnel & Bridge Health Doctor (Jitter & Loss)\n" "$C_G" "$C_0"
+    printf "  %s[24]%s VPS Bandwidth & Speedtest (Global & Regional Throughput)\n" "$C_G" "$C_0"
+    printf "  %s[25]%s Live Connections & Traffic Monitor (Real-time MB/s & Clients)\n" "$C_G" "$C_0"
+    printf "  %s[26]%s Port & Firewall Doctor (Scan ports & One-Click Port Opener)\n" "$C_G" "$C_0"
+    printf "  %s[27]%s Recommended VLESS-Reality Setup on Free Port 443\n\n" "$C_G" "$C_0"
 
     printf "  %s--- [ MANAGEMENT ] ---%s\n" "$C_C" "$C_0"
     printf "  %s[r]%s  Restore / Rollback Settings to Original State\n" "$C_M" "$C_0"
@@ -459,6 +460,10 @@ main_menu() {
         ;;
       15)
         clear_screen
+        run_subscript "omega-iran-unlocker.sh"
+        ;;
+      16)
+        clear_screen
         printf "%s=== Security & Anti-Bruteforce Hardening ===%s\n\n" "$C_B" "$C_0"
         printf "  %s[1]%s Apply Fail2ban & ICMP Ping Shield\n" "$C_G" "$C_0"
         printf "  %s[2]%s Show Security Status & Banned IPs\n" "$C_G" "$C_0"
@@ -473,7 +478,7 @@ main_menu() {
           *) echo "Invalid choice."; sleep 1 ;;
         esac
         ;;
-      16)
+      17)
         clear_screen
         printf "%s=== Panel Disaster Recovery & Backup Manager ===%s\n\n" "$C_B" "$C_0"
         printf "  %s[1]%s Create New Panel Backup (Database & Certs)\n" "$C_G" "$C_0"
@@ -489,7 +494,7 @@ main_menu() {
           *) echo "Invalid choice."; sleep 1 ;;
         esac
         ;;
-      17)
+      18)
         clear_screen
         printf "%s=== Automated Nightly Memory Janitor Cronjob ===%s\n\n" "$C_B" "$C_0"
         printf "  %s[1]%s Enable Nightly Janitor (Daily at 04:00 AM)\n" "$C_G" "$C_0"
@@ -507,41 +512,41 @@ main_menu() {
           *) echo "Invalid choice."; sleep 1 ;;
         esac
         ;;
-      18)
+      19)
         clear_screen
         run_subscript "omega-sysupdate.sh" || true
         printf "\n"
         read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
-      19)
+      20)
         clear_screen
         run_subscript "omega-watchdog.sh"
         ;;
-      20)
+      21)
         clear_screen
         run_subscript "omega-telegram.sh"
         ;;
-      21)
+      22)
         clear_screen
         run_subscript "omega-iran-probe.sh"
         printf "\n"
         read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
-      22)
+      23)
         clear_screen
         run_subscript "omega-bridge.sh"
         ;;
-      23)
+      24)
         clear_screen
         run_subscript "omega-speedtest.sh"
         printf "\n"
         read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
-      24)
+      25)
         clear_screen
         run_subscript "omega-monitor.sh"
         ;;
-      25)
+      26)
         clear_screen
         printf "%s=== Port & Firewall Doctor ===%s\n\n" "$C_B" "$C_0"
         printf "  %s[1]%s Scan Critical VPN & Web Ports\n" "$C_G" "$C_0"
@@ -555,7 +560,7 @@ main_menu() {
           *) echo "Invalid choice."; sleep 1 ;;
         esac
         ;;
-      26)
+      27)
         show_reality_guide
         ;;
       r|R)
