@@ -12,7 +12,7 @@ if [ ! -t 0 ] && [ -e /dev/tty ]; then
   exec </dev/tty
 fi
 
-VERSION="2.0.0"
+VERSION="2.1.0"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE_DIR="/opt/omega-boost"
 
