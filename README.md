@@ -46,12 +46,14 @@ omega
 ## قابلیت‌های منوی تعاملی (`omega`)
 
 1. **Server Audit (Preflight):** بررسی پورت‌ها، منابع سرور و کشف تداخل‌ها (کاملاً فقط‌خواندنی)
-2. **Network & Kernel Tuning:** فعال‌سازی BBR + FQ و بهینه‌سازی پارامترهای TCP لینوکس
-3. **Operator Compatibility Booster:** حل تخصصی مشکل وصل نشدن سامانتل و رایتل با رفع تله MTU
-4. **Instagram & Streaming Optimizer:** رفع کامل گیر و لودینگ ریلزهای اینستاگرام (کاملاً سازگار با وایرگارد)
-5. **System Maintenance & Essential Tools:** آپدیت مخازن و نصب ابزارهای ضروری شبکه
-6. **One-Click Full Server Optimization:** اعمال یک‌جای تمام بهینه‌سازی‌ها با یک کلیک
-7. **VLESS-Reality Guide for Port 443:** راهنمای گام‌به‌گام تنظیم اینباند روی پورت آزاد ۴۴۳
-8. **Connection & Diagnostics:** تست پینگ و پکت‌لاس به ایران و جهان
-9. **Rollback & Restore:** بازگردانی سریع همه تغییرات به وضعیت اولیه
+2. **★ One-Click Full Server Optimization:** اعمال یک‌جای تمام بهینه‌سازی‌ها با یک کلیک
+3. **Network & Kernel Tuning:** فعال‌سازی BBR + FQ و بهینه‌سازی پارامترهای TCP لینوکس
+4. **Operator Compatibility Booster:** حل تخصصی مشکل وصل نشدن سامانتل و رایتل با رفع تله MTU
+5. **Instagram & Streaming Optimizer:** رفع کامل گیر و لودینگ ریلزهای اینستاگرام (کاملاً سازگار با وایرگارد)
+6. **System & Hardware Optimizer:** بهینه‌سازی رم (swappiness=10)، دیسک (200M logs)، دی‌ان‌اس و افزایش سقف سوکت‌ها به ۱ میلیون
+7. **Smart Swap Memory Manager:** ایجاد و مدیریت هوشمند سواپ با پیشنهادهای متناسب با رم سرور
+8. **System Maintenance & Essential Tools:** آپدیت مخازن و نصب ابزارهای ضروری شبکه
+9. **VLESS-Reality Guide for Port 443:** راهنمای گام‌به‌گام تنظیم اینباند روی پورت آزاد ۴۴۳
+10. **Connection & Diagnostics:** تست پینگ و پکت‌لاس به ایران و جهان
+[r] **Rollback & Restore:** بازگردانی سریع همه تغییرات به وضعیت اولیه
 [u] **Update Suite:** آپدیت منو به آخرین نسخه با یک کلیک

@@ -15,7 +15,7 @@ if [ ! -t 0 ] && [ -e /dev/tty ]; then
   exec </dev/tty
 fi
 
-VERSION="1.1.1"
+VERSION="1.2.0"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE_DIR="/opt/omega-boost"
 
@@ -245,13 +245,13 @@ main_menu() {
     draw_header
     
     printf "%s  [1]%s Run Read-Only Preflight Server Audit\n" "$C_G" "$C_0"
-    printf "%s  [2]%s Apply Network & Kernel Tuning (BBR + FQ + sysctl)\n" "$C_G" "$C_0"
-    printf "%s  [3]%s Apply Operator Compatibility Booster (Fix Samantel / Mobile MTU)\n" "$C_G" "$C_0"
-    printf "%s  [4]%s Optimize Instagram & Video Streaming (Safe for WARP & Google)\n" "$C_G" "$C_0"
-    printf "%s  [5]%s Optimize System & Hardware (RAM, Ulimit 1M, Logs 200M, DNS)\n" "$C_G" "$C_0"
-    printf "%s  [6]%s Smart Swap Memory Manager (Dynamic RAM-based options)\n" "$C_G" "$C_0"
-    printf "%s  [7]%s Update System Packages & Install Essential Tools\n" "$C_G" "$C_0"
-    printf "%s  [8]%s %s★ ONE-CLICK FULL SERVER OPTIMIZATION (All of Above)%s\n" "$C_Y" "$C_W" "$C_0" "$C_0"
+    printf "%s  [2]%s %s★ ONE-CLICK FULL SERVER OPTIMIZATION (All Options Combined)%s\n" "$C_Y" "$C_W" "$C_0" "$C_0"
+    printf "%s  [3]%s Apply Network & Kernel Tuning (BBR + FQ + sysctl)\n" "$C_G" "$C_0"
+    printf "%s  [4]%s Apply Operator Compatibility Booster (Fix Samantel / Mobile MTU)\n" "$C_G" "$C_0"
+    printf "%s  [5]%s Optimize Instagram & Video Streaming (Safe for WARP & Google)\n" "$C_G" "$C_0"
+    printf "%s  [6]%s Optimize System & Hardware (RAM, Ulimit 1M, Logs 200M, DNS)\n" "$C_G" "$C_0"
+    printf "%s  [7]%s Smart Swap Memory Manager (Dynamic RAM-based options)\n" "$C_G" "$C_0"
+    printf "%s  [8]%s Update System Packages & Install Essential Tools\n" "$C_G" "$C_0"
     printf "%s  [9]%s Recommended VLESS-Reality Setup on Free Port 443\n" "$C_G" "$C_0"
     printf "%s [10]%s Connection & Latency Diagnostics\n" "$C_G" "$C_0"
     printf "%s  [r]%s Restore / Rollback Settings to Original State\n" "$C_M" "$C_0"
@@ -273,6 +273,9 @@ main_menu() {
         read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
       2)
+        run_one_click
+        ;;
+      3)
         clear_screen
         printf "%s=== Network & Kernel Tuning ===%s\n\n" "$C_B" "$C_0"
         printf "  %s[1]%s Apply live optimizations\n" "$C_G" "$C_0"
@@ -290,7 +293,7 @@ main_menu() {
           *) echo "Invalid choice."; sleep 1 ;;
         esac
         ;;
-      3)
+      4)
         clear_screen
         printf "%s=== Operator Compatibility Fix (Samantel / Rightel / LTE) ===%s\n\n" "$C_B" "$C_0"
         printf "  %s[1]%s Apply MSS Clamping & MTU Fix\n" "$C_G" "$C_0"
@@ -306,7 +309,7 @@ main_menu() {
           *) echo "Invalid choice."; sleep 1 ;;
         esac
         ;;
-      4)
+      5)
         clear_screen
         printf "%s=== Instagram & Video Streaming Optimizer ===%s\n\n" "$C_B" "$C_0"
         printf "  %s[1]%s Apply Instagram Streaming Optimization\n" "$C_G" "$C_0"
@@ -322,7 +325,7 @@ main_menu() {
           *) echo "Invalid choice."; sleep 1 ;;
         esac
         ;;
-      5)
+      6)
         clear_screen
         printf "%s=== System & Hardware Tuning ===%s\n\n" "$C_B" "$C_0"
         printf "  %s[1]%s Apply all hardware optimizations (Ulimit 1M, VM swappiness=10, 200M logs, fast DNS)\n" "$C_G" "$C_0"
@@ -338,18 +341,15 @@ main_menu() {
           *) echo "Invalid choice."; sleep 1 ;;
         esac
         ;;
-      6)
+      7)
         clear_screen
         bash "${SCRIPT_DIR}/omega-hardware-opt.sh" --swap
         ;;
-      7)
+      8)
         clear_screen
         bash "${SCRIPT_DIR}/omega-sysupdate.sh" || true
         printf "\n"
         read -r -p "Press [Enter] to return to main menu..." dummy || true
-        ;;
-      8)
-        run_one_click
         ;;
       9)
         show_reality_guide
