@@ -1,7 +1,7 @@
 # 👑 Omega VPS All In One Optimizer (Bidirectional Turbo Edition)
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Release-v4.2.0--Turbo-blue.svg?style=for-the-badge&logo=github" alt="Release v4.2.0" />
+  <img src="https://img.shields.io/badge/Release-v4.3.0--Turbo-blue.svg?style=for-the-badge&logo=github" alt="Release v4.3.0" />
   <img src="https://img.shields.io/badge/OS-Ubuntu%20|%20Debian%20|%20CentOS-orange.svg?style=for-the-badge&logo=linux" alt="OS Support" />
   <img src="https://img.shields.io/badge/Panel%20Safety-100%25%20Untouched-success.svg?style=for-the-badge&logo=shield" alt="Panel Safety" />
   <img src="https://img.shields.io/badge/Iran%20Server-Docker%20%2B%20APT%20%2B%20GitHub%20Speedup-orange.svg?style=for-the-badge&logo=docker" alt="Iran Server Booster" />
