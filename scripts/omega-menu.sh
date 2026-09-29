@@ -10,7 +10,7 @@
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
 set -u
 
-VERSION="4.0.0"
+VERSION="4.0.1"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 [ -f "${SCRIPT_DIR}/omega-watchdog.sh" ] || SCRIPT_DIR="/opt/omega-boost/scripts"
 [ -f "${SCRIPT_DIR}/omega-watchdog.sh" ] || SCRIPT_DIR="/opt/omega-boost"
@@ -578,7 +578,9 @@ main_menu() {
             run_subscript "omega-security.sh" --rollback || true
             run_subscript "omega-cron.sh" --disable || true
             run_subscript "omega-dns.sh" rollback || true
+            run_subscript "omega-unban.sh" disable || true
             run_subscript "omega-watchdog.sh" disable || true
+            run_subscript "omega-iran-unlocker.sh" rollback || true
             printf "\n%s[OK] All modifications rolled back cleanly.%s\n" "$C_G" "$C_0"
             ;;
           *)

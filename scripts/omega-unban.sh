@@ -235,7 +235,6 @@ EOF
   systemctl daemon-reload
   systemctl enable --now omega-unban.timer >/dev/null 2>&1
   printf "%s[OK] Auto-Heal Daemon is active! Runs automatically every 30 minutes in background.%s\n\n" "$C_G" "$C_0"
-  read -r -p "Press [Enter] to return to menu..." _ || true
 }
 
 remove_daemon() {
@@ -243,7 +242,6 @@ remove_daemon() {
   rm -f "$SERVICE_FILE" "$TIMER_FILE"
   systemctl daemon-reload
   printf "%s[OK] Auto-Heal Daemon removed.%s\n\n" "$C_G" "$C_0"
-  read -r -p "Press [Enter] to return to menu..." _ || true
 }
 
 auto_heal_tick() {
@@ -279,8 +277,8 @@ menu() {
     case "$opt" in
       1) run_diagnostics ;;
       2) fix_unban ;;
-      3) install_daemon ;;
-      4) remove_daemon ;;
+      3) install_daemon; read -r -p "Press [Enter] to return..." _ || true ;;
+      4) remove_daemon; read -r -p "Press [Enter] to return..." _ || true ;;
       0) break ;;
       *) printf "%sInvalid option.%s\n" "$C_R" "$C_0" ;;
     esac
