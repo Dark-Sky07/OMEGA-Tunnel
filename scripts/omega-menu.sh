@@ -15,7 +15,7 @@ if [ ! -t 0 ] && [ -e /dev/tty ]; then
   exec </dev/tty
 fi
 
-VERSION="1.1.0"
+VERSION="1.1.1"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE_DIR="/opt/omega-boost"
 
@@ -274,79 +274,73 @@ main_menu() {
         ;;
       2)
         clear_screen
-        printf "Select action for Network Tuning:\n"
-        printf "  [1] Apply live optimizations\n"
-        printf "  [2] Dry-run preview\n"
-        printf "  [3] Show status\n"
-        printf "  [4] Rollback network tuning\n"
-        read -r -p "Choice [1-4]: " subchoice || subchoice=""
-        clear_screen
+        printf "%s=== Network & Kernel Tuning ===%s\n\n" "$C_B" "$C_0"
+        printf "  %s[1]%s Apply live optimizations\n" "$C_G" "$C_0"
+        printf "  %s[2]%s Dry-run preview\n" "$C_G" "$C_0"
+        printf "  %s[3]%s Show status\n" "$C_G" "$C_0"
+        printf "  %s[4]%s Rollback network tuning\n" "$C_M" "$C_0"
+        printf "  %s[0]%s Back to Main Menu\n\n" "$C_Y" "$C_0"
+        read -r -p "Choice [0-4]: " subchoice || subchoice="0"
         case "$subchoice" in
-          1) bash "${SCRIPT_DIR}/omega-boost.sh" --apply ;;
-          2) bash "${SCRIPT_DIR}/omega-boost.sh" --dry-run ;;
-          3) bash "${SCRIPT_DIR}/omega-boost.sh" --status ;;
-          4) bash "${SCRIPT_DIR}/omega-boost.sh" --rollback ;;
-          *) echo "Invalid choice." ;;
+          1) clear_screen; bash "${SCRIPT_DIR}/omega-boost.sh" --apply; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          2) clear_screen; bash "${SCRIPT_DIR}/omega-boost.sh" --dry-run; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          3) clear_screen; bash "${SCRIPT_DIR}/omega-boost.sh" --status; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          4) clear_screen; bash "${SCRIPT_DIR}/omega-boost.sh" --rollback; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          0|b|B|"") continue ;;
+          *) echo "Invalid choice."; sleep 1 ;;
         esac
-        printf "\n"
-        read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
       3)
         clear_screen
-        printf "Select action for Operator Compatibility Fix:\n"
-        printf "  [1] Apply MSS Clamping & MTU Fix (Samantel / Rightel / LTE)\n"
-        printf "  [2] Show operator status\n"
-        printf "  [3] Rollback operator rules\n"
-        read -r -p "Choice [1-3]: " opchoice || opchoice=""
-        clear_screen
+        printf "%s=== Operator Compatibility Fix (Samantel / Rightel / LTE) ===%s\n\n" "$C_B" "$C_0"
+        printf "  %s[1]%s Apply MSS Clamping & MTU Fix\n" "$C_G" "$C_0"
+        printf "  %s[2]%s Show operator status\n" "$C_G" "$C_0"
+        printf "  %s[3]%s Rollback operator rules\n" "$C_M" "$C_0"
+        printf "  %s[0]%s Back to Main Menu\n\n" "$C_Y" "$C_0"
+        read -r -p "Choice [0-3]: " opchoice || opchoice="0"
         case "$opchoice" in
-          1) bash "${SCRIPT_DIR}/omega-operator-fix.sh" --apply ;;
-          2) bash "${SCRIPT_DIR}/omega-operator-fix.sh" --status ;;
-          3) bash "${SCRIPT_DIR}/omega-operator-fix.sh" --rollback ;;
-          *) echo "Invalid choice." ;;
+          1) clear_screen; bash "${SCRIPT_DIR}/omega-operator-fix.sh" --apply; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          2) clear_screen; bash "${SCRIPT_DIR}/omega-operator-fix.sh" --status; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          3) clear_screen; bash "${SCRIPT_DIR}/omega-operator-fix.sh" --rollback; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          0|b|B|"") continue ;;
+          *) echo "Invalid choice."; sleep 1 ;;
         esac
-        printf "\n"
-        read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
       4)
         clear_screen
-        printf "Select action for Instagram & Video Streaming Optimizer:\n"
-        printf "  [1] Apply Instagram Streaming Optimization\n"
-        printf "  [2] Show status\n"
-        printf "  [3] Rollback Instagram rules\n"
-        read -r -p "Choice [1-3]: " igchoice || igchoice=""
-        clear_screen
+        printf "%s=== Instagram & Video Streaming Optimizer ===%s\n\n" "$C_B" "$C_0"
+        printf "  %s[1]%s Apply Instagram Streaming Optimization\n" "$C_G" "$C_0"
+        printf "  %s[2]%s Show status\n" "$C_G" "$C_0"
+        printf "  %s[3]%s Rollback Instagram rules\n" "$C_M" "$C_0"
+        printf "  %s[0]%s Back to Main Menu\n\n" "$C_Y" "$C_0"
+        read -r -p "Choice [0-3]: " igchoice || igchoice="0"
         case "$igchoice" in
-          1) bash "${SCRIPT_DIR}/omega-instagram-fix.sh" --apply ;;
-          2) bash "${SCRIPT_DIR}/omega-instagram-fix.sh" --status ;;
-          3) bash "${SCRIPT_DIR}/omega-instagram-fix.sh" --rollback ;;
-          *) echo "Invalid choice." ;;
+          1) clear_screen; bash "${SCRIPT_DIR}/omega-instagram-fix.sh" --apply; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          2) clear_screen; bash "${SCRIPT_DIR}/omega-instagram-fix.sh" --status; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          3) clear_screen; bash "${SCRIPT_DIR}/omega-instagram-fix.sh" --rollback; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          0|b|B|"") continue ;;
+          *) echo "Invalid choice."; sleep 1 ;;
         esac
-        printf "\n"
-        read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
       5)
         clear_screen
-        printf "Select action for System & Hardware Tuning:\n"
-        printf "  [1] Apply all hardware optimizations (Ulimit 1M, VM swappiness=10, 200M logs, fast DNS)\n"
-        printf "  [2] Show hardware status\n"
-        printf "  [3] Rollback hardware tuning\n"
-        read -r -p "Choice [1-3]: " hwchoice || hwchoice=""
-        clear_screen
+        printf "%s=== System & Hardware Tuning ===%s\n\n" "$C_B" "$C_0"
+        printf "  %s[1]%s Apply all hardware optimizations (Ulimit 1M, VM swappiness=10, 200M logs, fast DNS)\n" "$C_G" "$C_0"
+        printf "  %s[2]%s Show hardware status\n" "$C_G" "$C_0"
+        printf "  %s[3]%s Rollback hardware tuning\n" "$C_M" "$C_0"
+        printf "  %s[0]%s Back to Main Menu\n\n" "$C_Y" "$C_0"
+        read -r -p "Choice [0-3]: " hwchoice || hwchoice="0"
         case "$hwchoice" in
-          1) bash "${SCRIPT_DIR}/omega-hardware-opt.sh" --all ;;
-          2) bash "${SCRIPT_DIR}/omega-hardware-opt.sh" --status ;;
-          3) bash "${SCRIPT_DIR}/omega-hardware-opt.sh" --rollback ;;
-          *) echo "Invalid choice." ;;
+          1) clear_screen; bash "${SCRIPT_DIR}/omega-hardware-opt.sh" --all; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          2) clear_screen; bash "${SCRIPT_DIR}/omega-hardware-opt.sh" --status; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          3) clear_screen; bash "${SCRIPT_DIR}/omega-hardware-opt.sh" --rollback; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          0|b|B|"") continue ;;
+          *) echo "Invalid choice."; sleep 1 ;;
         esac
-        printf "\n"
-        read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
       6)
         clear_screen
         bash "${SCRIPT_DIR}/omega-hardware-opt.sh" --swap
-        printf "\n"
-        read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
       7)
         clear_screen

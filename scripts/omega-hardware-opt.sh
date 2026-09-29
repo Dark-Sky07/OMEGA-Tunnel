@@ -122,9 +122,12 @@ manage_swap() {
   if [ "$target_gb" -gt 0 ]; then
     if [ "$target_gb" -ge "$free_disk" ]; then
       bad "Not enough free disk space ($free_disk GB available, requested $target_gb GB)!"
+      read -r -p "  Press [Enter] to return..." dummy || true
       return 1
     fi
     create_swap "$target_gb"
+    printf "\n"
+    read -r -p "  Press [Enter] to return to main menu..." dummy || true
   fi
 }
 
@@ -168,6 +171,8 @@ disable_swap() {
   rm -f /swapfile
   sed -i '\|/swapfile|d' /etc/fstab 2>/dev/null || true
   ok "Swap disabled and removed."
+  printf "\n"
+  read -r -p "  Press [Enter] to return to main menu..." dummy || true
 }
 
 # ----------------- Virtual Memory Tuning -----------------
