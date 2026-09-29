@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #===============================================================================
 #  omega-menu — Interactive Terminal Menu for Omega VPS All In One Optimizer
-#  Version 2.0.0
+#  Version 2.5.0 (Ultimate Edition)
 #===============================================================================
 
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
@@ -12,7 +12,7 @@ if [ ! -t 0 ] && [ -e /dev/tty ]; then
   exec </dev/tty
 fi
 
-VERSION="2.1.0"
+VERSION="2.5.0"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE_DIR="/opt/omega-boost"
 
@@ -163,23 +163,6 @@ show_reality_guide() {
   read -r -p "Press [Enter] to return to main menu..." dummy || true
 }
 
-run_diagnostics() {
-  clear_screen
-  printf "%s=== GLOBAL CONNECTION & LATENCY DIAGNOSTICS ===%s\n\n" "$C_B" "$C_0"
-  
-  printf "1. Ping to Cloudflare DNS (1.1.1.1):\n"
-  ping -c 4 1.1.1.1 2>/dev/null || echo "Ping failed"
-  
-  printf "\n2. Ping to Google DNS (8.8.8.8):\n"
-  ping -c 4 8.8.8.8 2>/dev/null || echo "Ping failed"
-  
-  printf "\n3. DNS Resolution Test (Yahoo & Cloudflare):\n"
-  time nslookup www.yahoo.com 2>/dev/null | grep -E "Address|Name" || host www.yahoo.com 2>/dev/null || echo "DNS query finished"
-
-  printf "\n"
-  read -r -p "Press [Enter] to return to main menu..." dummy || true
-}
-
 run_one_click() {
   clear_screen
   printf "%s=== ONE-CLICK FULL SERVER OPTIMIZATION ===%s\n" "$C_B" "$C_0"
@@ -238,6 +221,10 @@ update_suite() {
     "omega-operator-fix.sh"
     "omega-instagram-fix.sh"
     "omega-hardware-opt.sh"
+    "omega-speedtest.sh"
+    "omega-cf-scanner.sh"
+    "omega-monitor.sh"
+    "omega-port-doctor.sh"
     "omega-iran-probe.sh"
     "omega-sni-checker.sh"
     "omega-security.sh"
@@ -276,20 +263,23 @@ main_menu() {
     printf "%s  [3]%s  Network & Kernel Tuning (BBR + FQ + sysctl)\n" "$C_G" "$C_0"
     printf "%s  [4]%s  Operator Compatibility Booster (Fix Samantel / Mobile MTU)\n" "$C_G" "$C_0"
     printf "%s  [5]%s  Optimize Instagram & Video Streaming (Safe for WARP & Google)\n" "$C_G" "$C_0"
-    printf "%s  [6]%s  Reality SNI & Clean Domain Finder (Test best domains for Reality)\n\n" "$C_G" "$C_0"
+    printf "%s  [6]%s  Reality SNI & Clean Domain Finder (Test best domains for Reality)\n" "$C_G" "$C_0"
+    printf "%s  [7]%s  Cloudflare Clean IP Scanner (Find best low-latency CDN IPs)\n\n" "$C_G" "$C_0"
 
     printf "%s  --- [ SYSTEM, HARDWARE & SECURITY ] ---%s\n" "$C_W" "$C_0"
-    printf "%s  [7]%s  System & Hardware Tuning (RAM, Ulimit 1M, Logs 200M, DNS)\n" "$C_G" "$C_0"
-    printf "%s  [8]%s  Smart Swap Memory Manager (Dynamic suggestions based on RAM)\n" "$C_G" "$C_0"
-    printf "%s  [9]%s  Security & Anti-Bruteforce Hardening (Fail2ban + Ping Shield)\n" "$C_G" "$C_0"
-    printf "%s  [10]%s Panel & Disaster Recovery Backup (1-Click Backup & Restore)\n" "$C_G" "$C_0"
-    printf "%s  [11]%s Automated Nightly Janitor Cronjob (Memory & Cache Cleaner)\n" "$C_G" "$C_0"
-    printf "%s  [12]%s Update System Packages & Install Essential Tools\n\n" "$C_G" "$C_0"
+    printf "%s  [8]%s  System & Hardware Tuning (RAM, Ulimit 1M, Logs 200M, DNS)\n" "$C_G" "$C_0"
+    printf "%s  [9]%s  Smart Swap Memory Manager (Dynamic suggestions based on RAM)\n" "$C_G" "$C_0"
+    printf "%s  [10]%s Security & Anti-Bruteforce Hardening (Fail2ban + Ping Shield)\n" "$C_G" "$C_0"
+    printf "%s  [11]%s Panel & Disaster Recovery Backup (1-Click Backup & Restore)\n" "$C_G" "$C_0"
+    printf "%s  [12]%s Automated Nightly Janitor Cronjob (Memory & Cache Cleaner)\n" "$C_G" "$C_0"
+    printf "%s  [13]%s Update System Packages & Install Essential Tools\n\n" "$C_G" "$C_0"
 
-    printf "%s  --- [ DIAGNOSTICS & GUIDES ] ---%s\n" "$C_W" "$C_0"
-    printf "%s  [13]%s Iran Operators Latency & Packet Loss Probe (MCI, Irancell, etc.)\n" "$C_G" "$C_0"
-    printf "%s  [14]%s Global Connection & Latency Diagnostics (Cloudflare, Google)\n" "$C_G" "$C_0"
-    printf "%s  [15]%s Recommended VLESS-Reality Setup on Free Port 443\n\n" "$C_G" "$C_0"
+    printf "%s  --- [ MONITORING & DIAGNOSTICS ] ---%s\n" "$C_W" "$C_0"
+    printf "%s  [14]%s Iran Operators Latency & Packet Loss Probe (19 targets)\n" "$C_G" "$C_0"
+    printf "%s  [15]%s VPS Bandwidth & Speedtest (Global & Regional Throughput)\n" "$C_G" "$C_0"
+    printf "%s  [16]%s Live Connections & Traffic Monitor (Real-time MB/s & Clients)\n" "$C_G" "$C_0"
+    printf "%s  [17]%s Port & Firewall Doctor (Scan ports & One-Click Port Opener)\n" "$C_G" "$C_0"
+    printf "%s  [18]%s Recommended VLESS-Reality Setup on Free Port 443\n\n" "$C_G" "$C_0"
 
     printf "%s  --- [ MANAGEMENT ] ---%s\n" "$C_W" "$C_0"
     printf "%s  [r]%s  Restore / Rollback Settings to Original State\n" "$C_M" "$C_0"
@@ -298,7 +288,7 @@ main_menu() {
     printf "%s------------------------------------------------------------------------%s\n" "$C_B" "$C_0"
     
     local choice=""
-    if ! read -r -p "Please select an option [0-15, r, u]: " choice; then
+    if ! read -r -p "Please select an option [0-18, r, u]: " choice; then
       printf "\nSession ended.\n"
       exit 0
     fi
@@ -371,6 +361,12 @@ main_menu() {
         ;;
       7)
         clear_screen
+        bash "${SCRIPT_DIR}/omega-cf-scanner.sh"
+        printf "\n"
+        read -r -p "Press [Enter] to return to main menu..." dummy || true
+        ;;
+      8)
+        clear_screen
         printf "%s=== System & Hardware Tuning ===%s\n\n" "$C_B" "$C_0"
         printf "  %s[1]%s Apply all hardware optimizations (Ulimit 1M, VM swappiness=10, 200M logs, fast DNS)\n" "$C_G" "$C_0"
         printf "  %s[2]%s Show hardware status\n" "$C_G" "$C_0"
@@ -385,11 +381,11 @@ main_menu() {
           *) echo "Invalid choice."; sleep 1 ;;
         esac
         ;;
-      8)
+      9)
         clear_screen
         bash "${SCRIPT_DIR}/omega-hardware-opt.sh" --swap
         ;;
-      9)
+      10)
         clear_screen
         printf "%s=== Security & Anti-Bruteforce Hardening ===%s\n\n" "$C_B" "$C_0"
         printf "  %s[1]%s Apply Fail2ban & ICMP Ping Shield\n" "$C_G" "$C_0"
@@ -405,7 +401,7 @@ main_menu() {
           *) echo "Invalid choice."; sleep 1 ;;
         esac
         ;;
-      10)
+      11)
         clear_screen
         printf "%s=== Panel Disaster Recovery & Backup Manager ===%s\n\n" "$C_B" "$C_0"
         printf "  %s[1]%s Create New Panel Backup (Database & Certs)\n" "$C_G" "$C_0"
@@ -421,7 +417,7 @@ main_menu() {
           *) echo "Invalid choice."; sleep 1 ;;
         esac
         ;;
-      11)
+      12)
         clear_screen
         printf "%s=== Automated Nightly Memory Janitor Cronjob ===%s\n\n" "$C_B" "$C_0"
         printf "  %s[1]%s Enable Nightly Janitor (Daily at 04:00 AM)\n" "$C_G" "$C_0"
@@ -439,22 +435,43 @@ main_menu() {
           *) echo "Invalid choice."; sleep 1 ;;
         esac
         ;;
-      12)
+      13)
         clear_screen
         bash "${SCRIPT_DIR}/omega-sysupdate.sh" || true
         printf "\n"
         read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
-      13)
+      14)
         clear_screen
         bash "${SCRIPT_DIR}/omega-iran-probe.sh"
         printf "\n"
         read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
-      14)
-        run_diagnostics
-        ;;
       15)
+        clear_screen
+        bash "${SCRIPT_DIR}/omega-speedtest.sh"
+        printf "\n"
+        read -r -p "Press [Enter] to return to main menu..." dummy || true
+        ;;
+      16)
+        clear_screen
+        bash "${SCRIPT_DIR}/omega-monitor.sh"
+        ;;
+      17)
+        clear_screen
+        printf "%s=== Port & Firewall Doctor ===%s\n\n" "$C_B" "$C_0"
+        printf "  %s[1]%s Scan Critical VPN & Web Ports\n" "$C_G" "$C_0"
+        printf "  %s[2]%s Open a Port in Firewall (TCP/UDP)\n" "$C_G" "$C_0"
+        printf "  %s[0]%s Back to Main Menu\n\n" "$C_Y" "$C_0"
+        read -r -p "Choice [0-2]: " portchoice || portchoice="0"
+        case "$portchoice" in
+          1) clear_screen; bash "${SCRIPT_DIR}/omega-port-doctor.sh" --scan; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          2) clear_screen; bash "${SCRIPT_DIR}/omega-port-doctor.sh" --open; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          0|b|B|"") continue ;;
+          *) echo "Invalid choice."; sleep 1 ;;
+        esac
+        ;;
+      18)
         show_reality_guide
         ;;
       r|R)
