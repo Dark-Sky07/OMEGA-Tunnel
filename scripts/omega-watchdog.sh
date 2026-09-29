@@ -79,9 +79,12 @@ watchdog_loop() {
 enable_watchdog() {
   printf "\n%s=== ENABLING 24/7 AUTO-HEALING WATCHDOG ===%s\n" "$C_B" "$C_0"
 
-  mkdir -p /opt/omega-boost
-  cp "$0" "$SCRIPT_PATH"
-  chmod +x "$SCRIPT_PATH"
+  mkdir -p /opt/omega-boost /opt/omega-boost/scripts
+  local src_script
+  src_script="$(readlink -f "${BASH_SOURCE[0]}")"
+  cp -f "$src_script" "$SCRIPT_PATH"
+  cp -f "$src_script" "/opt/omega-boost/scripts/omega-watchdog.sh" 2>/dev/null || true
+  chmod +x "$SCRIPT_PATH" "/opt/omega-boost/scripts/omega-watchdog.sh" 2>/dev/null || true
   touch "$LOG_FILE"
 
   cat <<EOF > "$SERVICE_FILE"
@@ -102,7 +105,7 @@ WantedBy=multi-user.target
 EOF
 
   systemctl daemon-reload
-  systemctl enable --now omega-watchdog.service >/dev/null 2>&1
+  systemctl enable --now omega-watchdog.service >/dev/null 2>&1 || systemctl restart omega-watchdog.service >/dev/null 2>&1 || true
   printf "%s[OK] Watchdog is active! Checking panel & core health every 20 seconds.%s\n" "$C_G" "$C_0"
 }
 
@@ -188,8 +191,14 @@ menu() {
 
 if [ "${1:-}" = "daemon" ]; then
   watchdog_loop
-elif [ "${1:-}" = "check" ]; then
+elif [ "${1:-}" = "check" ] || [ "${1:-}" = "--check" ]; then
   check_and_heal
+elif [ "${1:-}" = "enable" ] || [ "${1:-}" = "--enable" ]; then
+  enable_watchdog
+elif [ "${1:-}" = "disable" ] || [ "${1:-}" = "--disable" ]; then
+  disable_watchdog
+elif [ "${1:-}" = "logs" ] || [ "${1:-}" = "--logs" ]; then
+  view_logs
 else
   menu
 fi

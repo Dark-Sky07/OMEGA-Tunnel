@@ -67,15 +67,16 @@ LOCAL_SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/scripts"
 for file in "${SCRIPT_FILES[@]}"; do
   target="${SCRIPTS_DIR}/${file}"
   if [ -f "${LOCAL_SCRIPTS_DIR}/${file}" ]; then
-    cp "${LOCAL_SCRIPTS_DIR}/${file}" "$target"
+    cp -f "${LOCAL_SCRIPTS_DIR}/${file}" "$target"
   else
     printf "  Downloading %s...\n" "$file"
     curl -fsSL "${RAW_BASE}/scripts/${file}" -o "$target" 2>/dev/null || \
-      curl -fsSL "http://127.0.0.1:8000/${file}" -o "$target" 2>/dev/null || true
+      curl -fsSL "https://cdn.jsdelivr.net/gh/Dark-Sky07/OMEGA-Tunnel@arena/01a0d868-omega-tunnel/scripts/${file}" -o "$target" 2>/dev/null || true
   fi
   chmod +x "$target"
-  # Also link to INSTALL_DIR directly so /opt/omega-boost/omega-*.sh resolves
-  ln -sf "$target" "${INSTALL_DIR}/${file}" 2>/dev/null || true
+  # Guarantee script exists in both /opt/omega-boost/scripts and /opt/omega-boost
+  cp -f "$target" "${INSTALL_DIR}/${file}" 2>/dev/null || true
+  chmod +x "${INSTALL_DIR}/${file}" 2>/dev/null || true
 done
 
 # Create global binary wrapper

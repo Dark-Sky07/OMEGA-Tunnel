@@ -10,9 +10,33 @@
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
 set -u
 
-VERSION="3.0.0"
-SCRIPT_DIR="/opt/omega-boost"
-[ -d "$SCRIPT_DIR" ] || SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+VERSION="3.1.0"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+[ -f "${SCRIPT_DIR}/omega-watchdog.sh" ] || SCRIPT_DIR="/opt/omega-boost/scripts"
+[ -f "${SCRIPT_DIR}/omega-watchdog.sh" ] || SCRIPT_DIR="/opt/omega-boost"
+
+# Helper to find and run modular sub-scripts safely
+run_subscript() {
+  local script_name="$1"
+  shift
+  local full_target=""
+
+  if [ -f "${SCRIPT_DIR}/${script_name}" ]; then
+    full_target="${SCRIPT_DIR}/${script_name}"
+  elif [ -f "/opt/omega-boost/scripts/${script_name}" ]; then
+    full_target="/opt/omega-boost/scripts/${script_name}"
+  elif [ -f "/opt/omega-boost/${script_name}" ]; then
+    full_target="/opt/omega-boost/${script_name}"
+  fi
+
+  if [ -n "$full_target" ] && [ -f "$full_target" ]; then
+    bash "$full_target" "$@"
+  else
+    printf "\n%s[ERROR] Script %s not found on system!%s\n" "$C_R" "$script_name" "$C_0"
+    printf "Please update by pressing 'u' or running the installer.\n\n"
+    read -r -p "Press [Enter] to continue..." _ || true
+  fi
+}
 
 # Color codes
 if [ -t 1 ]; then
@@ -33,9 +57,9 @@ clear_screen() {
 }
 
 get_panel_status() {
-  if systemctl is-active --quiet x-ui 2>/dev/null; then
+  if systemctl is-active --quiet x-ui >/dev/null 2>&1; then
     printf "%sRunning (Safe & Untouched)%s" "$C_G" "$C_0"
-  elif systemctl is-active --quiet 3x-ui 2>/dev/null; then
+  elif systemctl is-active --quiet 3x-ui >/dev/null 2>&1; then
     printf "%sRunning (Safe & Untouched)%s" "$C_G" "$C_0"
   elif [ -d "/usr/local/x-ui" ]; then
     printf "%sInstalled (Inactive)%s" "$C_Y" "$C_0"
@@ -57,7 +81,7 @@ get_bbr_status() {
 }
 
 get_operator_status() {
-  if iptables -t mangle -C POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu 2>/dev/null; then
+  if iptables -t mangle -C POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu >/dev/null 2>&1; then
     printf "%sActive (PMTU Clamped)%s" "$C_G" "$C_0"
   else
     printf "%sInactive%s" "$C_Y" "$C_0"
@@ -65,7 +89,7 @@ get_operator_status() {
 }
 
 get_instagram_status() {
-  if iptables -C OUTPUT -p udp --dport 443 -m set --match-set meta_cidrs dst -j REJECT 2>/dev/null; then
+  if [ -f "/opt/omega-boost/instagram-active.flag" ] || iptables -C OUTPUT -d "157.240.0.0/16" -p udp --dport 443 -j REJECT --reject-with icmp-port-unreachable >/dev/null 2>&1; then
     printf "%sTargeted (Safe for WARP)%s" "$C_G" "$C_0"
   else
     printf "%sInactive%s" "$C_Y" "$C_0"
@@ -73,7 +97,7 @@ get_instagram_status() {
 }
 
 get_security_status() {
-  if systemctl is-active --quiet fail2ban 2>/dev/null; then
+  if systemctl is-active --quiet fail2ban >/dev/null 2>&1; then
     printf "%sProtected (Fail2ban + Ping)%s" "$C_G" "$C_0"
   else
     printf "%sDefault%s" "$C_Y" "$C_0"
@@ -81,7 +105,7 @@ get_security_status() {
 }
 
 get_watchdog_status() {
-  if systemctl is-active --quiet omega-watchdog.service 2>/dev/null; then
+  if systemctl is-active --quiet omega-watchdog.service >/dev/null 2>&1 || pgrep -f "omega-watchdog.sh daemon" >/dev/null 2>&1; then
     printf "%sActive (Guarded)%s" "$C_G" "$C_0"
   else
     printf "%sInactive%s" "$C_Y" "$C_0"
@@ -89,7 +113,7 @@ get_watchdog_status() {
 }
 
 get_unban_status() {
-  if systemctl is-active --quiet omega-unban.timer 2>/dev/null; then
+  if systemctl is-active --quiet omega-unban.timer >/dev/null 2>&1; then
     printf "%sActive (Auto-Heal)%s" "$C_G" "$C_0"
   else
     printf "%sManual%s" "$C_Y" "$C_0"
@@ -197,39 +221,34 @@ run_one_click() {
   case "$confirm" in
     [yY]|[yY][eE][sS])
       printf "\n[1/10] Applying kernel & network tuning...\n"
-      bash "${SCRIPT_DIR}/omega-boost.sh" --apply || true
+      run_subscript "omega-boost.sh" --apply || true
       
       printf "\n[2/10] Applying operator compatibility booster...\n"
-      bash "${SCRIPT_DIR}/omega-operator-fix.sh" --apply || true
+      run_subscript "omega-operator-fix.sh" --apply || true
 
       printf "\n[3/10] Applying Instagram & video streaming optimizer...\n"
-      bash "${SCRIPT_DIR}/omega-instagram-fix.sh" --apply || true
+      run_subscript "omega-instagram-fix.sh" --apply || true
 
       printf "\n[4/10] Applying smart anti-pollution DNS cache...\n"
-      bash "${SCRIPT_DIR}/omega-dns.sh" apply || true
+      run_subscript "omega-dns.sh" apply || true
 
       printf "\n[5/10] Applying system hardware, RAM, ulimit, & logs tuning...\n"
-      bash "${SCRIPT_DIR}/omega-hardware-opt.sh" --all || true
+      run_subscript "omega-hardware-opt.sh" --all || true
 
       printf "\n[6/10] Applying security hardening & Fail2ban...\n"
-      bash "${SCRIPT_DIR}/omega-security.sh" --apply || true
+      run_subscript "omega-security.sh" --apply || true
 
       printf "\n[7/10] Activating background Google/ChatGPT auto-unban daemon...\n"
-      bash "${SCRIPT_DIR}/omega-unban.sh" fix || true
-      if [ -f "/etc/systemd/system/omega-unban.service" ]; then
-        systemctl enable --now omega-unban.timer >/dev/null 2>&1 || true
-      fi
+      run_subscript "omega-unban.sh" enable || true
 
       printf "\n[8/10] Enabling 24/7 panel & Xray auto-healing watchdog...\n"
-      if [ -f "${SCRIPT_DIR}/omega-watchdog.sh" ]; then
-        bash "${SCRIPT_DIR}/omega-watchdog.sh" check || true
-      fi
+      run_subscript "omega-watchdog.sh" enable || true
 
       printf "\n[9/10] Scheduling nightly janitor maintenance...\n"
-      bash "${SCRIPT_DIR}/omega-cron.sh" --enable || true
+      run_subscript "omega-cron.sh" --enable || true
 
       printf "\n[10/10] Updating essential system packages...\n"
-      bash "${SCRIPT_DIR}/omega-sysupdate.sh" || true
+      run_subscript "omega-sysupdate.sh" || true
       
       printf "\n%s[SUCCESS] Full Server Optimization Completed!%s\n" "$C_G" "$C_0"
       ;;
@@ -299,7 +318,7 @@ main_menu() {
     case "$choice" in
       1)
         clear_screen
-        bash "${SCRIPT_DIR}/omega-preflight.sh"
+        run_subscript "omega-preflight.sh"
         printf "\n"
         read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
@@ -315,9 +334,9 @@ main_menu() {
         printf "  %s[0]%s Back to Main Menu\n\n" "$C_Y" "$C_0"
         read -r -p "Choice [0-3]: " netchoice || netchoice="0"
         case "$netchoice" in
-          1) clear_screen; bash "${SCRIPT_DIR}/omega-boost.sh" --apply; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
-          2) clear_screen; bash "${SCRIPT_DIR}/omega-boost.sh" --status; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
-          3) clear_screen; bash "${SCRIPT_DIR}/omega-boost.sh" --rollback; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          1) clear_screen; run_subscript "omega-boost.sh" --apply; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          2) clear_screen; run_subscript "omega-boost.sh" --status; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          3) clear_screen; run_subscript "omega-boost.sh" --rollback; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
           0|b|B|"") continue ;;
           *) echo "Invalid choice."; sleep 1 ;;
         esac
@@ -331,9 +350,9 @@ main_menu() {
         printf "  %s[0]%s Back to Main Menu\n\n" "$C_Y" "$C_0"
         read -r -p "Choice [0-3]: " opchoice || opchoice="0"
         case "$opchoice" in
-          1) clear_screen; bash "${SCRIPT_DIR}/omega-operator-fix.sh" --apply; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
-          2) clear_screen; bash "${SCRIPT_DIR}/omega-operator-fix.sh" --status; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
-          3) clear_screen; bash "${SCRIPT_DIR}/omega-operator-fix.sh" --rollback; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          1) clear_screen; run_subscript "omega-operator-fix.sh" --apply; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          2) clear_screen; run_subscript "omega-operator-fix.sh" --status; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          3) clear_screen; run_subscript "omega-operator-fix.sh" --rollback; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
           0|b|B|"") continue ;;
           *) echo "Invalid choice."; sleep 1 ;;
         esac
@@ -347,28 +366,28 @@ main_menu() {
         printf "  %s[0]%s Back to Main Menu\n\n" "$C_Y" "$C_0"
         read -r -p "Choice [0-3]: " igchoice || igchoice="0"
         case "$igchoice" in
-          1) clear_screen; bash "${SCRIPT_DIR}/omega-instagram-fix.sh" --apply; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
-          2) clear_screen; bash "${SCRIPT_DIR}/omega-instagram-fix.sh" --status; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
-          3) clear_screen; bash "${SCRIPT_DIR}/omega-instagram-fix.sh" --rollback; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          1) clear_screen; run_subscript "omega-instagram-fix.sh" --apply; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          2) clear_screen; run_subscript "omega-instagram-fix.sh" --status; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          3) clear_screen; run_subscript "omega-instagram-fix.sh" --rollback; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
           0|b|B|"") continue ;;
           *) echo "Invalid choice."; sleep 1 ;;
         esac
         ;;
       6)
         clear_screen
-        bash "${SCRIPT_DIR}/omega-sni-checker.sh"
+        run_subscript "omega-sni-checker.sh"
         printf "\n"
         read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
       7)
         clear_screen
-        bash "${SCRIPT_DIR}/omega-cf-scanner.sh"
+        run_subscript "omega-cf-scanner.sh"
         printf "\n"
         read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
       8)
         clear_screen
-        bash "${SCRIPT_DIR}/omega-dns.sh"
+        run_subscript "omega-dns.sh"
         ;;
       9)
         clear_screen
@@ -379,20 +398,20 @@ main_menu() {
         printf "  %s[0]%s Back to Main Menu\n\n" "$C_Y" "$C_0"
         read -r -p "Choice [0-3]: " hwchoice || hwchoice="0"
         case "$hwchoice" in
-          1) clear_screen; bash "${SCRIPT_DIR}/omega-hardware-opt.sh" --all; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
-          2) clear_screen; bash "${SCRIPT_DIR}/omega-hardware-opt.sh" --status; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
-          3) clear_screen; bash "${SCRIPT_DIR}/omega-hardware-opt.sh" --rollback; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          1) clear_screen; run_subscript "omega-hardware-opt.sh" --all; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          2) clear_screen; run_subscript "omega-hardware-opt.sh" --status; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          3) clear_screen; run_subscript "omega-hardware-opt.sh" --rollback; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
           0|b|B|"") continue ;;
           *) echo "Invalid choice."; sleep 1 ;;
         esac
         ;;
       10)
         clear_screen
-        bash "${SCRIPT_DIR}/omega-hardware-opt.sh" --swap
+        run_subscript "omega-hardware-opt.sh" --swap
         ;;
       11)
         clear_screen
-        bash "${SCRIPT_DIR}/omega-unban.sh"
+        run_subscript "omega-unban.sh"
         ;;
       12)
         clear_screen
@@ -403,9 +422,9 @@ main_menu() {
         printf "  %s[0]%s Back to Main Menu\n\n" "$C_Y" "$C_0"
         read -r -p "Choice [0-3]: " secchoice || secchoice="0"
         case "$secchoice" in
-          1) clear_screen; bash "${SCRIPT_DIR}/omega-security.sh" --apply; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
-          2) clear_screen; bash "${SCRIPT_DIR}/omega-security.sh" --status; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
-          3) clear_screen; bash "${SCRIPT_DIR}/omega-security.sh" --rollback; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          1) clear_screen; run_subscript "omega-security.sh" --apply; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          2) clear_screen; run_subscript "omega-security.sh" --status; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          3) clear_screen; run_subscript "omega-security.sh" --rollback; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
           0|b|B|"") continue ;;
           *) echo "Invalid choice."; sleep 1 ;;
         esac
@@ -419,9 +438,9 @@ main_menu() {
         printf "  %s[0]%s Back to Main Menu\n\n" "$C_Y" "$C_0"
         read -r -p "Choice [0-3]: " bakchoice || bakchoice="0"
         case "$bakchoice" in
-          1) clear_screen; bash "${SCRIPT_DIR}/omega-backup.sh" --backup; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
-          2) clear_screen; bash "${SCRIPT_DIR}/omega-backup.sh" --list; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
-          3) clear_screen; bash "${SCRIPT_DIR}/omega-backup.sh" --restore; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          1) clear_screen; run_subscript "omega-backup.sh" --backup; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          2) clear_screen; run_subscript "omega-backup.sh" --list; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          3) clear_screen; run_subscript "omega-backup.sh" --restore; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
           0|b|B|"") continue ;;
           *) echo "Invalid choice."; sleep 1 ;;
         esac
@@ -436,47 +455,47 @@ main_menu() {
         printf "  %s[0]%s Back to Main Menu\n\n" "$C_Y" "$C_0"
         read -r -p "Choice [0-4]: " cronchoice || cronchoice="0"
         case "$cronchoice" in
-          1) clear_screen; bash "${SCRIPT_DIR}/omega-cron.sh" --enable; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
-          2) clear_screen; bash "${SCRIPT_DIR}/omega-cron.sh" --run; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
-          3) clear_screen; bash "${SCRIPT_DIR}/omega-cron.sh" --disable; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
-          4) clear_screen; bash "${SCRIPT_DIR}/omega-cron.sh" --status; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          1) clear_screen; run_subscript "omega-cron.sh" --enable; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          2) clear_screen; run_subscript "omega-cron.sh" --run; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          3) clear_screen; run_subscript "omega-cron.sh" --disable; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          4) clear_screen; run_subscript "omega-cron.sh" --status; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
           0|b|B|"") continue ;;
           *) echo "Invalid choice."; sleep 1 ;;
         esac
         ;;
       15)
         clear_screen
-        bash "${SCRIPT_DIR}/omega-sysupdate.sh" || true
+        run_subscript "omega-sysupdate.sh" || true
         printf "\n"
         read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
       16)
         clear_screen
-        bash "${SCRIPT_DIR}/omega-watchdog.sh"
+        run_subscript "omega-watchdog.sh"
         ;;
       17)
         clear_screen
-        bash "${SCRIPT_DIR}/omega-telegram.sh"
+        run_subscript "omega-telegram.sh"
         ;;
       18)
         clear_screen
-        bash "${SCRIPT_DIR}/omega-iran-probe.sh"
+        run_subscript "omega-iran-probe.sh"
         printf "\n"
         read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
       19)
         clear_screen
-        bash "${SCRIPT_DIR}/omega-bridge.sh"
+        run_subscript "omega-bridge.sh"
         ;;
       20)
         clear_screen
-        bash "${SCRIPT_DIR}/omega-speedtest.sh"
+        run_subscript "omega-speedtest.sh"
         printf "\n"
         read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
       21)
         clear_screen
-        bash "${SCRIPT_DIR}/omega-monitor.sh"
+        run_subscript "omega-monitor.sh"
         ;;
       22)
         clear_screen
@@ -486,8 +505,8 @@ main_menu() {
         printf "  %s[0]%s Back to Main Menu\n\n" "$C_Y" "$C_0"
         read -r -p "Choice [0-2]: " portchoice || portchoice="0"
         case "$portchoice" in
-          1) clear_screen; bash "${SCRIPT_DIR}/omega-port-doctor.sh" --scan; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
-          2) clear_screen; bash "${SCRIPT_DIR}/omega-port-doctor.sh" --open; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          1) clear_screen; run_subscript "omega-port-doctor.sh" --scan; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          2) clear_screen; run_subscript "omega-port-doctor.sh" --open; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
           0|b|B|"") continue ;;
           *) echo "Invalid choice."; sleep 1 ;;
         esac
@@ -501,14 +520,14 @@ main_menu() {
         read -r -p "Are you sure you want to restore original server settings? [y/N]: " confirm_rb || confirm_rb="n"
         case "$confirm_rb" in
           [yY]|[yY][eE][sS])
-            bash "${SCRIPT_DIR}/omega-boost.sh" --rollback || true
-            bash "${SCRIPT_DIR}/omega-operator-fix.sh" --rollback || true
-            bash "${SCRIPT_DIR}/omega-instagram-fix.sh" --rollback || true
-            bash "${SCRIPT_DIR}/omega-hardware-opt.sh" --rollback || true
-            bash "${SCRIPT_DIR}/omega-security.sh" --rollback || true
-            bash "${SCRIPT_DIR}/omega-cron.sh" --disable || true
-            bash "${SCRIPT_DIR}/omega-dns.sh" rollback || true
-            bash "${SCRIPT_DIR}/omega-watchdog.sh" disable || true
+            run_subscript "omega-boost.sh" --rollback || true
+            run_subscript "omega-operator-fix.sh" --rollback || true
+            run_subscript "omega-instagram-fix.sh" --rollback || true
+            run_subscript "omega-hardware-opt.sh" --rollback || true
+            run_subscript "omega-security.sh" --rollback || true
+            run_subscript "omega-cron.sh" --disable || true
+            run_subscript "omega-dns.sh" rollback || true
+            run_subscript "omega-watchdog.sh" disable || true
             printf "\n%s[OK] All modifications rolled back cleanly.%s\n" "$C_G" "$C_0"
             ;;
           *)

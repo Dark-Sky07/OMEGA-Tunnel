@@ -164,9 +164,12 @@ fix_unban() {
 install_daemon() {
   printf "\n%s=== INSTALLING BACKGROUND AUTO-HEAL DAEMON ===%s\n" "$C_B" "$C_0"
 
-  mkdir -p /opt/omega-boost
-  cp "$0" "$SCRIPT_PATH"
-  chmod +x "$SCRIPT_PATH"
+  mkdir -p /opt/omega-boost /opt/omega-boost/scripts
+  local src_script
+  src_script="$(readlink -f "${BASH_SOURCE[0]}")"
+  cp -f "$src_script" "$SCRIPT_PATH"
+  cp -f "$src_script" "/opt/omega-boost/scripts/omega-unban.sh" 2>/dev/null || true
+  chmod +x "$SCRIPT_PATH" "/opt/omega-boost/scripts/omega-unban.sh" 2>/dev/null || true
 
   cat <<EOF > "$SERVICE_FILE"
 [Unit]
@@ -247,10 +250,14 @@ menu() {
 
 if [ "${1:-}" = "auto-heal" ]; then
   auto_heal_tick
-elif [ "${1:-}" = "diagnose" ]; then
+elif [ "${1:-}" = "diagnose" ] || [ "${1:-}" = "--diagnose" ]; then
   run_diagnostics
-elif [ "${1:-}" = "fix" ]; then
+elif [ "${1:-}" = "fix" ] || [ "${1:-}" = "--fix" ]; then
   fix_unban
+elif [ "${1:-}" = "enable" ] || [ "${1:-}" = "--enable" ]; then
+  install_daemon
+elif [ "${1:-}" = "disable" ] || [ "${1:-}" = "--disable" ]; then
+  remove_daemon
 else
   menu
 fi
