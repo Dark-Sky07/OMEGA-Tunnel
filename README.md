@@ -1,4 +1,4 @@
-# 👑 Omega VPS All In One Optimizer (Bidirectional Turbo Edition)
+# 👑 OMEGA VPS Optimizer (Bidirectional Turbo Edition)
 
 <p align="center">
   <img src="https://img.shields.io/badge/Release-v4.3.0--Turbo-blue.svg?style=for-the-badge&logo=github" alt="Release v4.3.0" />
@@ -27,25 +27,25 @@
 ========================================================================
 ```
 
-**Omega VPS All In One Optimizer** یک سوئیت مهندسی‌شده و مافوق‌حرفه‌ای برای تقویت همه‌جانبه سرورهای لینوکس (VPS) است. این پروژه طراحی شده تا بدون نیاز به سرور واسط ایران (Relay/Bridge)، با دور زدن لایه‌های اختلال و فیلترینگ شدید اپراتورها (ایرانسل، همراه اول، رایتل و سامانتل)، سرعت، پایداری و تاب‌آوری اتصالات کاربران را به بالاترین سطح ممکن برساند.
+**OMEGA VPS Optimizer** یک سوئیت مهندسی‌شده و مافوق‌حرفه‌ای برای تقویت همه‌جانبه سرورهای لینوکس (VPS) است. این پروژه طراحی شده تا بدون نیاز به سرور واسط ایران (Relay/Bridge)، با دور زدن لایه‌های اختلال و فیلترینگ شدید اپراتورها (ایرانسل، همراه اول، رایتل و سامانتل)، سرعت، پایداری و تاب‌آوری اتصالات کاربران را به بالاترین سطح ممکن برساند.
 
 > 🔒 **تضمین ۱۰۰٪ عدم تداخل با پنل (Zero-Downtime Panel Safety):**  
 > این اسکریپت به‌هیچ‌وجه به فایل دیتابیس ۳ایکس‌یوآی (`x-ui.db`)، باینری هسته Xray، یا کانفیگ‌های کاربران دست نمی‌زند، سرویس پنل را ری‌استارت نمی‌کند و ارتباط هیچ کاربر آنلاینی را قطع نمی‌کند!
 
 ---
 
-## ⚡ نصب سریع و یک‌خطی (One-Liner Install)
+## ⚡ نصب سریع و خودکار آخرین نسخه (Always Latest Auto-Install)
 
-تنها با اجرای یک دستور در ترمینال سرور لینوکسی خود، سوئیت امگا به همراه دستور سراسری `omega` دانلود و نصب می‌شود:
+تنها با اجرای یک دستور ساده در ترمینال سرور لینوکسی خود، همیشه **آخرین نسخه رسمی منتشرشده** به همراه دستور سراسری `omega` دانلود و نصب می‌شود:
 
 ```bash
-curl -fsSL https://github.com/Dark-Sky07/OMEGA-Tunnel/archive/refs/heads/arena/01a0d868-omega-tunnel.tar.gz | tar -xz && bash OMEGA-Tunnel-arena-01a0d868-omega-tunnel/install.sh && rm -rf OMEGA-Tunnel-arena-01a0d868-omega-tunnel
+sudo bash -c "cd /tmp && rm -rf omega-pkg && mkdir -p omega-pkg && (curl -fsSL 'https://github.com/Dark-Sky07/OMEGA-VPS-Optimizer/archive/refs/heads/arena/01a0d868-omega-tunnel.tar.gz' 2>/dev/null || curl -fsSL 'https://github.com/Dark-Sky07/OMEGA-Tunnel/archive/refs/heads/arena/01a0d868-omega-tunnel.tar.gz') | tar -xz -C omega-pkg --strip-components=1 && bash omega-pkg/install.sh && rm -rf omega-pkg"
 ```
 
-یا روش جایگزین با اجرای مستقیم استریم:
+یا روش جایگزین با اجرای اسکریپت نصب:
 
 ```bash
-curl -fsSL https://codeload.github.com/Dark-Sky07/OMEGA-Tunnel/tar.gz/refs/heads/arena/01a0d868-omega-tunnel | tar -xzO OMEGA-Tunnel-arena-01a0d868-omega-tunnel/install.sh | bash
+bash <(curl -fsSL https://raw.githubusercontent.com/Dark-Sky07/OMEGA-VPS-Optimizer/arena/01a0d868-omega-tunnel/install.sh 2>/dev/null || curl -fsSL https://raw.githubusercontent.com/Dark-Sky07/OMEGA-Tunnel/arena/01a0d868-omega-tunnel/install.sh)
 ```
 
 پس از نصب، در هر زمان و از هر کجای ترمینال فقط با تایپ کلمه زیر منوی قدرتمند امگا باز می‌شود:

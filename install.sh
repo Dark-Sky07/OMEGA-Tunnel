@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #===============================================================================
-#  OMEGA-Tunnel Automated One-Liner Installer
+#  OMEGA VPS Optimizer — Automated One-Liner Installer
 #
-#  Installs the OMEGA-Tunnel suite into /opt/omega-boost and registers
+#  Installs the OMEGA VPS Optimizer suite into /opt/omega-boost and registers
 #  the 'omega' system command for convenient menu access.
 #
 #  Safety:
@@ -16,8 +16,6 @@ set -u
 INSTALL_DIR="/opt/omega-boost"
 SCRIPTS_DIR="${INSTALL_DIR}/scripts"
 BIN_LINK="/usr/local/bin/omega"
-REPO_BRANCH="arena/01a0d868-omega-tunnel"
-RAW_BASE="https://raw.githubusercontent.com/Dark-Sky07/OMEGA-Tunnel/${REPO_BRANCH}"
 
 # Color helpers
 if [ -t 1 ]; then
@@ -29,11 +27,11 @@ fi
 
 if [ "$(id -u)" -ne 0 ]; then
   printf "%s[FAIL] Installer must be run as root.%s\n" "$C_R" "$C_0"
-  printf "Please run: sudo bash install.sh\n"
+  printf "Please run with sudo: sudo bash %s\n" "$0"
   exit 1
 fi
 
-printf "\n%s=== Installing Omega VPS All In One Optimizer ===%s\n\n" "$C_B" "$C_0"
+printf "\n%s=== Installing OMEGA VPS Optimizer ===%s\n\n" "$C_B" "$C_0"
 
 mkdir -p "$SCRIPTS_DIR"
 mkdir -p "${INSTALL_DIR}/backup"
@@ -80,10 +78,37 @@ if [ -d "$LOCAL_SCRIPTS_DIR" ] && [ -f "${LOCAL_SCRIPTS_DIR}/omega-menu.sh" ]; t
     fi
   done
 else
-  printf "Downloading full release archive from GitHub...\n"
+  printf "Checking latest release on GitHub...\n"
+  LATEST_TAG=""
+  REPO_NAME="Dark-Sky07/OMEGA-VPS-Optimizer"
+  for repo_cand in "Dark-Sky07/OMEGA-VPS-Optimizer" "Dark-Sky07/OMEGA-Tunnel"; do
+    tag="$(curl -sI "https://github.com/${repo_cand}/releases/latest" 2>/dev/null | awk -F'/' '/[Ll]ocation:/ {print $NF}' | tr -d '\r\n')"
+    if [ -n "$tag" ]; then
+      LATEST_TAG="$tag"
+      REPO_NAME="$repo_cand"
+      break
+    fi
+  done
+
   TMP_DL="$(mktemp -d)"
-  if curl -fsSL "https://github.com/Dark-Sky07/OMEGA-Tunnel/archive/refs/heads/arena/01a0d868-omega-tunnel.tar.gz" | tar -xz -C "$TMP_DL" --strip-components=1 2>/dev/null || \
-     wget -qO- "https://github.com/Dark-Sky07/OMEGA-Tunnel/archive/refs/heads/arena/01a0d868-omega-tunnel.tar.gz" | tar -xz -C "$TMP_DL" --strip-components=1 2>/dev/null; then
+  dl_ok=0
+  if [ -n "$LATEST_TAG" ]; then
+    printf "Downloading latest release (%s) from %s...\n" "$LATEST_TAG" "$REPO_NAME"
+    if curl -fsSL "https://github.com/${REPO_NAME}/archive/refs/tags/${LATEST_TAG}.tar.gz" 2>/dev/null | tar -xz -C "$TMP_DL" --strip-components=1 2>/dev/null || \
+       wget -qO- "https://github.com/${REPO_NAME}/archive/refs/tags/${LATEST_TAG}.tar.gz" 2>/dev/null | tar -xz -C "$TMP_DL" --strip-components=1 2>/dev/null; then
+      dl_ok=1
+    fi
+  fi
+
+  if [ "$dl_ok" -eq 0 ]; then
+    printf "Downloading latest branch archive from %s...\n" "$REPO_NAME"
+    if curl -fsSL "https://github.com/${REPO_NAME}/archive/refs/heads/arena/01a0d868-omega-tunnel.tar.gz" 2>/dev/null | tar -xz -C "$TMP_DL" --strip-components=1 2>/dev/null || \
+       wget -qO- "https://github.com/${REPO_NAME}/archive/refs/heads/arena/01a0d868-omega-tunnel.tar.gz" 2>/dev/null | tar -xz -C "$TMP_DL" --strip-components=1 2>/dev/null; then
+      dl_ok=1
+    fi
+  fi
+
+  if [ "$dl_ok" -eq 1 ]; then
     for file in "${SCRIPT_FILES[@]}"; do
       target="${SCRIPTS_DIR}/${file}"
       if [ -f "${TMP_DL}/scripts/${file}" ]; then
@@ -112,7 +137,7 @@ exec bash /opt/omega-boost/scripts/omega-menu.sh "$@"
 EOF
 chmod +x "$BIN_LINK"
 
-printf "\n%s[OK] OMEGA-Tunnel installed successfully!%s\n" "$C_G" "$C_0"
+printf "\n%s[OK] OMEGA VPS Optimizer installed successfully!%s\n" "$C_G" "$C_0"
 printf "  Installation path: %s\n" "$INSTALL_DIR"
 printf "  Global command:    %somega%s\n\n" "$C_W" "$C_0"
 printf "To launch the menu anytime, simply type: %somega%s\n\n" "$C_G" "$C_0"

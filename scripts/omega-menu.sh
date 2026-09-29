@@ -292,13 +292,49 @@ run_one_click() {
 update_suite() {
   clear_screen
   printf "%s=== UPDATING OMEGA VPS OPTIMIZER TO LATEST RELEASE ===%s\n\n" "$C_B" "$C_0"
-  printf "Fetching the latest release archive from GitHub...\n"
+  printf "Checking for the latest release on GitHub...\n"
+
+  local latest_tag=""
+  local repo_name="Dark-Sky07/OMEGA-VPS-Optimizer"
+  for repo_cand in "Dark-Sky07/OMEGA-VPS-Optimizer" "Dark-Sky07/OMEGA-Tunnel"; do
+    local tag
+    tag="$(curl -sI "https://github.com/${repo_cand}/releases/latest" 2>/dev/null | awk -F'/' '/[Ll]ocation:/ {print $NF}' | tr -d '\r\n')"
+    if [ -n "$tag" ]; then
+      latest_tag="$tag"
+      repo_name="$repo_cand"
+      break
+    fi
+  done
+
+  if [ -n "$latest_tag" ]; then
+    printf "Found latest version: %s%s%s (from %s)\n" "$C_G" "$latest_tag" "$C_0" "$repo_name"
+  else
+    printf "Fetching latest code from repository...\n"
+  fi
+
   local tmp_dir
   tmp_dir="$(mktemp -d)"
-  if curl -fsSL "https://github.com/Dark-Sky07/OMEGA-Tunnel/archive/refs/heads/arena/01a0d868-omega-tunnel.tar.gz" | tar -xz -C "$tmp_dir" --strip-components=1 2>/dev/null || \
-     wget -qO- "https://github.com/Dark-Sky07/OMEGA-Tunnel/archive/refs/heads/arena/01a0d868-omega-tunnel.tar.gz" | tar -xz -C "$tmp_dir" --strip-components=1 2>/dev/null; then
+  local dl_ok=0
+
+  if [ -n "$latest_tag" ]; then
+    if curl -fsSL "https://github.com/${repo_name}/archive/refs/tags/${latest_tag}.tar.gz" 2>/dev/null | tar -xz -C "$tmp_dir" --strip-components=1 2>/dev/null || \
+       wget -qO- "https://github.com/${repo_name}/archive/refs/tags/${latest_tag}.tar.gz" 2>/dev/null | tar -xz -C "$tmp_dir" --strip-components=1 2>/dev/null; then
+      dl_ok=1
+    fi
+  fi
+
+  if [ "$dl_ok" -eq 0 ]; then
+    if curl -fsSL "https://github.com/${repo_name}/archive/refs/heads/arena/01a0d868-omega-tunnel.tar.gz" 2>/dev/null | tar -xz -C "$tmp_dir" --strip-components=1 2>/dev/null || \
+       wget -qO- "https://github.com/${repo_name}/archive/refs/heads/arena/01a0d868-omega-tunnel.tar.gz" 2>/dev/null | tar -xz -C "$tmp_dir" --strip-components=1 2>/dev/null; then
+      dl_ok=1
+    fi
+  fi
+
+  if [ "$dl_ok" -eq 1 ]; then
     printf "Installing updated scripts into /opt/omega-boost...\n"
-    bash "$tmp_dir/install.sh"
+    cp -rf "$tmp_dir/scripts/"* /opt/omega-boost/scripts/ 2>/dev/null || true
+    cp -rf "$tmp_dir/scripts/"* /opt/omega-boost/ 2>/dev/null || true
+    chmod +x /opt/omega-boost/scripts/*.sh /opt/omega-boost/*.sh 2>/dev/null || true
     rm -rf "$tmp_dir"
     printf "\n%s[OK] Update completed successfully! Restarting menu in 2 seconds...%s\n" "$C_G" "$C_0"
     sleep 2
