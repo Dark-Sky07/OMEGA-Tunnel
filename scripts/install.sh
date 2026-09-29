@@ -68,20 +68,38 @@ SCRIPT_FILES=(
 
 LOCAL_SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/scripts"
 
-for file in "${SCRIPT_FILES[@]}"; do
-  target="${SCRIPTS_DIR}/${file}"
-  if [ -f "${LOCAL_SCRIPTS_DIR}/${file}" ]; then
-    cp -f "${LOCAL_SCRIPTS_DIR}/${file}" "$target"
+if [ -d "$LOCAL_SCRIPTS_DIR" ] && [ -f "${LOCAL_SCRIPTS_DIR}/omega-menu.sh" ]; then
+  printf "Installing scripts from local release package...\n"
+  for file in "${SCRIPT_FILES[@]}"; do
+    target="${SCRIPTS_DIR}/${file}"
+    if [ -f "${LOCAL_SCRIPTS_DIR}/${file}" ]; then
+      cp -f "${LOCAL_SCRIPTS_DIR}/${file}" "$target"
+      chmod +x "$target"
+      cp -f "$target" "${INSTALL_DIR}/${file}" 2>/dev/null || true
+      chmod +x "${INSTALL_DIR}/${file}" 2>/dev/null || true
+    fi
+  done
+else
+  printf "Downloading full release archive from GitHub...\n"
+  TMP_DL="$(mktemp -d)"
+  if curl -fsSL "https://github.com/Dark-Sky07/OMEGA-Tunnel/archive/refs/heads/arena/01a0d868-omega-tunnel.tar.gz" | tar -xz -C "$TMP_DL" --strip-components=1 2>/dev/null || \
+     wget -qO- "https://github.com/Dark-Sky07/OMEGA-Tunnel/archive/refs/heads/arena/01a0d868-omega-tunnel.tar.gz" | tar -xz -C "$TMP_DL" --strip-components=1 2>/dev/null; then
+    for file in "${SCRIPT_FILES[@]}"; do
+      target="${SCRIPTS_DIR}/${file}"
+      if [ -f "${TMP_DL}/scripts/${file}" ]; then
+        cp -f "${TMP_DL}/scripts/${file}" "$target"
+        chmod +x "$target"
+        cp -f "$target" "${INSTALL_DIR}/${file}" 2>/dev/null || true
+        chmod +x "${INSTALL_DIR}/${file}" 2>/dev/null || true
+      fi
+    done
+    rm -rf "$TMP_DL"
   else
-    printf "  Downloading %s...\n" "$file"
-    curl -fsSL "${RAW_BASE}/scripts/${file}" -o "$target" 2>/dev/null || \
-      curl -fsSL "https://cdn.jsdelivr.net/gh/Dark-Sky07/OMEGA-Tunnel@arena/01a0d868-omega-tunnel/scripts/${file}" -o "$target" 2>/dev/null || true
+    rm -rf "$TMP_DL"
+    printf "%s[FAIL] Could not download release archive from GitHub.%s\n" "$C_R" "$C_0"
+    exit 1
   fi
-  chmod +x "$target"
-  # Guarantee script exists in both /opt/omega-boost/scripts and /opt/omega-boost
-  cp -f "$target" "${INSTALL_DIR}/${file}" 2>/dev/null || true
-  chmod +x "${INSTALL_DIR}/${file}" 2>/dev/null || true
-done
+fi
 
 # Create global binary wrapper
 cat << 'EOF' > "$BIN_LINK"

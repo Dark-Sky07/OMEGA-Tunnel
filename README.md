@@ -36,10 +36,16 @@
 
 ## ⚡ نصب سریع و یک‌خطی (One-Liner Install)
 
-تنها با اجرای یک دستور ساده در ترمینال سرور لینوکسی خود، کل سوئیت به همراه دستور سراسری `omega` نصب و آماده اجرا می‌شود:
+تنها با اجرای یک دستور در ترمینال سرور لینوکسی خود، سوئیت امگا به همراه دستور سراسری `omega` دانلود و نصب می‌شود:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Dark-Sky07/OMEGA-Tunnel/arena/01a0d868-omega-tunnel/install.sh | bash
+curl -fsSL https://github.com/Dark-Sky07/OMEGA-Tunnel/archive/refs/heads/arena/01a0d868-omega-tunnel.tar.gz | tar -xz && bash OMEGA-Tunnel-arena-01a0d868-omega-tunnel/install.sh && rm -rf OMEGA-Tunnel-arena-01a0d868-omega-tunnel
+```
+
+یا روش جایگزین با اجرای مستقیم استریم:
+
+```bash
+curl -fsSL https://codeload.github.com/Dark-Sky07/OMEGA-Tunnel/tar.gz/refs/heads/arena/01a0d868-omega-tunnel | tar -xzO OMEGA-Tunnel-arena-01a0d868-omega-tunnel/install.sh | bash
 ```
 
 پس از نصب، در هر زمان و از هر کجای ترمینال فقط با تایپ کلمه زیر منوی قدرتمند امگا باز می‌شود:

@@ -292,11 +292,22 @@ run_one_click() {
 update_suite() {
   clear_screen
   printf "%s=== UPDATING OMEGA VPS OPTIMIZER TO LATEST RELEASE ===%s\n\n" "$C_B" "$C_0"
-  printf "Fetching the latest release scripts from repository...\n"
-  curl -fsSL https://raw.githubusercontent.com/Dark-Sky07/OMEGA-Tunnel/arena/01a0d868-omega-tunnel/install.sh | bash
-  printf "\n%s[OK] Update complete. Restarting menu in 2 seconds...%s\n" "$C_G" "$C_0"
-  sleep 2
-  exec /usr/local/bin/omega
+  printf "Fetching the latest release archive from GitHub...\n"
+  local tmp_dir
+  tmp_dir="$(mktemp -d)"
+  if curl -fsSL "https://github.com/Dark-Sky07/OMEGA-Tunnel/archive/refs/heads/arena/01a0d868-omega-tunnel.tar.gz" | tar -xz -C "$tmp_dir" --strip-components=1 2>/dev/null || \
+     wget -qO- "https://github.com/Dark-Sky07/OMEGA-Tunnel/archive/refs/heads/arena/01a0d868-omega-tunnel.tar.gz" | tar -xz -C "$tmp_dir" --strip-components=1 2>/dev/null; then
+    printf "Installing updated scripts into /opt/omega-boost...\n"
+    bash "$tmp_dir/install.sh"
+    rm -rf "$tmp_dir"
+    printf "\n%s[OK] Update completed successfully! Restarting menu in 2 seconds...%s\n" "$C_G" "$C_0"
+    sleep 2
+    exec /usr/local/bin/omega
+  else
+    rm -rf "$tmp_dir"
+    printf "\n%s[FAIL] Could not download update archive. Please check internet connection.%s\n" "$C_R" "$C_0"
+    read -r -p "Press [Enter] to return..." _ || true
+  fi
 }
 
 main_menu() {
