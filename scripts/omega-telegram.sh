@@ -5,20 +5,19 @@
 #   Description: Instant alerts for server status, watchdog, & IP unban
 # ========================================================================
 
-set -euo pipefail
+set -u
 
-C_0="\033[0m"
-C_R="\033[1;31m"
-C_G="\033[1;32m"
-C_Y="\033[1;33m"
-C_B="\033[1;34m"
-C_C="\033[1;36m"
-C_W="\033[1;37m"
+if [ -t 1 ]; then
+  C_G=$'\033[0;32m'; C_Y=$'\033[0;33m'; C_R=$'\033[0;31m'
+  C_B=$'\033[1;36m'; C_W=$'\033[1;37m'; C_C=$'\033[0;36m'; C_0=$'\033[0m'
+else
+  C_G=""; C_Y=""; C_R=""; C_B=""; C_W=""; C_C=""; C_0=""
+fi
 
 CONF_DIR="/opt/omega-boost"
 CONF_FILE="$CONF_DIR/telegram.conf"
 
-mkdir -p "$CONF_DIR"
+mkdir -p "$CONF_DIR" 2>/dev/null || true
 
 load_config() {
   BOT_TOKEN=""
@@ -146,7 +145,7 @@ menu() {
     printf "  %s[3]%s Toggle Alerts On/Off\n" "$C_C" "$C_0"
     printf "  %s[4]%s Delete Telegram Configuration\n" "$C_C" "$C_0"
     printf "  %s[0]%s Back to Main Menu\n" "$C_C" "$C_0"
-    printf "------------------------------------------------------------------------\n"
+    printf "%s\n" "------------------------------------------------------------------------"
     printf "Select an option: "
     read -r opt
     case "$opt" in
