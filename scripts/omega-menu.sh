@@ -1,10 +1,7 @@
 #!/usr/bin/env bash
 #===============================================================================
 #  omega-menu — Interactive Terminal Menu for Omega VPS All In One Optimizer
-#
-#  Comprehensive server management, network optimization, operator booster,
-#  hardware tuning, smart swap manager, and system maintenance.
-#  100% English interface for terminal compatibility.
+#  Version 2.0.0
 #===============================================================================
 
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
@@ -15,7 +12,7 @@ if [ ! -t 0 ] && [ -e /dev/tty ]; then
   exec </dev/tty
 fi
 
-VERSION="1.2.1"
+VERSION="2.0.0"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE_DIR="/opt/omega-boost"
 
@@ -77,9 +74,9 @@ get_instagram_status() {
   fi
 }
 
-get_hardware_status() {
-  if [ -f "/etc/security/limits.d/99-omega-limits.conf" ] && [ -f "/etc/sysctl.d/97-omega-vm.conf" ]; then
-    printf "%sOptimized (1M ulimit, vm=10)%s" "$C_G" "$C_0"
+get_security_status() {
+  if [ -f "/etc/fail2ban/jail.d/99-omega-sshd.local" ]; then
+    printf "%sProtected (Fail2ban + Ping Guard)%s" "$C_G" "$C_0"
   else
     printf "%sDefault%s" "$C_Y" "$C_0"
   fi
@@ -137,7 +134,7 @@ draw_header() {
   printf "  Server Panel:      %-30b  Kernel CC:     %b\n" "$(get_panel_status)" "$(get_bbr_status)"
   printf "  Operator Fix:      %-30b  Memory:        %s\n" "$(get_operator_status)" "${mem_info:-unknown}"
   printf "  Instagram Stream:  %-30b  Swap Memory:   %b\n" "$(get_instagram_status)" "$(get_swap_status)"
-  printf "  Hardware / Ulimit: %-30b  TCP 443:       %b\n" "$(get_hardware_status)" "$(get_port_status 443 tcp)"
+  printf "  Security Guard:    %-30b  TCP 443:       %b\n" "$(get_security_status)" "$(get_port_status 443 tcp)"
   printf "%s------------------------------------------------------------------------%s\n" "$C_B" "$C_0"
 }
 
@@ -154,13 +151,13 @@ show_reality_guide() {
   printf "  * Transmission:     %stcp%s\n" "$C_G" "$C_0"
   printf "  * Security:         %sreality%s\n" "$C_G" "$C_0"
   printf "  * uTLS:             %schrome%s (or firefox / ios)\n" "$C_G" "$C_0"
-  printf "  * Target / SNI:     %swww.yahoo.com:443%s or %sdl.google.com:443%s\n" "$C_G" "$C_0" "$C_G" "$C_0"
+  printf "  * Target / SNI:     %sgateway.icloud.com:443%s or %sdl.google.com:443%s\n" "$C_G" "$C_0" "$C_G" "$C_0"
   printf "  * ShortIds:         Click 'Generate' in panel (e.g. 8-byte hex)\n"
   printf "  * Flow:             %sxtls-rprx-vision%s\n\n" "$C_G" "$C_0"
 
   printf "%s  Why this works for tough operators like Samantel:%s\n" "$C_Y" "$C_0"
   printf "  1. Samantel blocks random high ports (like 8444, 8446) but permits Port 443.\n"
-  printf "  2. The MSS Clamping fix in OMEGA-Tunnel prevents mobile MTU fragmentation drops.\n"
+  printf "  2. The PMTU Clamping fix in Omega Optimizer prevents mobile MTU fragmentation drops.\n"
   printf "  3. Reality uses authentic foreign TLS certificates that pass DPI inspection.\n\n"
   
   read -r -p "Press [Enter] to return to main menu..." dummy || true
@@ -168,7 +165,7 @@ show_reality_guide() {
 
 run_diagnostics() {
   clear_screen
-  printf "%s=== CONNECTION & LATENCY DIAGNOSTICS ===%s\n\n" "$C_B" "$C_0"
+  printf "%s=== GLOBAL CONNECTION & LATENCY DIAGNOSTICS ===%s\n\n" "$C_B" "$C_0"
   
   printf "1. Ping to Cloudflare DNS (1.1.1.1):\n"
   ping -c 4 1.1.1.1 2>/dev/null || echo "Ping failed"
@@ -186,29 +183,37 @@ run_diagnostics() {
 run_one_click() {
   clear_screen
   printf "%s=== ONE-CLICK FULL SERVER OPTIMIZATION ===%s\n" "$C_B" "$C_0"
-  printf "This will run all optimizations together:\n"
+  printf "This will run all core optimizations together safely:\n"
   printf "  1. Network & Kernel Tuning (BBR + FQ + sysctl buffer tuning)\n"
   printf "  2. Operator Compatibility Booster (Samantel/Mobile PMTU Clamping)\n"
   printf "  3. Instagram & Streaming Optimizer (Targeted QUIC Rejection + fast TCP)\n"
   printf "  4. System & Hardware Tuning (1M ulimit, swappiness=10, 200M logs, fast DNS)\n"
-  printf "  5. System Package Maintenance (curl, jq, sqlite3, htop)\n\n"
+  printf "  5. Security Hardening (Fail2ban anti-bruteforce + ping rate limit)\n"
+  printf "  6. Automated Nightly Janitor Cronjob (daily cache & log cleaner at 04:00 AM)\n"
+  printf "  7. Essential Package Maintenance (curl, jq, sqlite3, htop)\n\n"
   
   read -r -p "Do you want to proceed? [y/N]: " confirm || confirm="n"
   case "$confirm" in
     [yY]|[yY][eE][sS])
-      printf "\n[1/5] Applying kernel & network tuning...\n"
+      printf "\n[1/7] Applying kernel & network tuning...\n"
       bash "${SCRIPT_DIR}/omega-boost.sh" --apply || true
       
-      printf "\n[2/5] Applying operator compatibility booster...\n"
+      printf "\n[2/7] Applying operator compatibility booster...\n"
       bash "${SCRIPT_DIR}/omega-operator-fix.sh" --apply || true
 
-      printf "\n[3/5] Applying Instagram & video streaming optimizer...\n"
+      printf "\n[3/7] Applying Instagram & video streaming optimizer...\n"
       bash "${SCRIPT_DIR}/omega-instagram-fix.sh" --apply || true
 
-      printf "\n[4/5] Applying system hardware, RAM, ulimit, logs & DNS tuning...\n"
+      printf "\n[4/7] Applying system hardware, RAM, ulimit, logs & DNS tuning...\n"
       bash "${SCRIPT_DIR}/omega-hardware-opt.sh" --all || true
 
-      printf "\n[5/5] Updating essential system packages...\n"
+      printf "\n[5/7] Applying security hardening & Fail2ban...\n"
+      bash "${SCRIPT_DIR}/omega-security.sh" --apply || true
+
+      printf "\n[6/7] Scheduling nightly janitor maintenance...\n"
+      bash "${SCRIPT_DIR}/omega-cron.sh" --enable || true
+
+      printf "\n[7/7] Updating essential system packages...\n"
       bash "${SCRIPT_DIR}/omega-sysupdate.sh" || true
       
       printf "\n%s[SUCCESS] Full Server Optimization Completed!%s\n" "$C_G" "$C_0"
@@ -227,7 +232,20 @@ update_suite() {
   printf "Fetching latest release scripts from repository...\n"
   
   local raw_base="https://raw.githubusercontent.com/Dark-Sky07/OMEGA-Tunnel/arena/01a0d868-omega-tunnel/scripts"
-  local files=("omega-menu.sh" "omega-boost.sh" "omega-operator-fix.sh" "omega-instagram-fix.sh" "omega-hardware-opt.sh" "omega-sysupdate.sh" "omega-preflight.sh")
+  local files=(
+    "omega-menu.sh"
+    "omega-boost.sh"
+    "omega-operator-fix.sh"
+    "omega-instagram-fix.sh"
+    "omega-hardware-opt.sh"
+    "omega-iran-probe.sh"
+    "omega-sni-checker.sh"
+    "omega-security.sh"
+    "omega-backup.sh"
+    "omega-cron.sh"
+    "omega-sysupdate.sh"
+    "omega-preflight.sh"
+  )
   
   for f in "${files[@]}"; do
     printf "  Updating %s..." "$f"
@@ -250,23 +268,37 @@ main_menu() {
     clear_screen
     draw_header
     
-    printf "%s  [1]%s Run Read-Only Preflight Server Audit\n" "$C_G" "$C_0"
-    printf "%s  [2]%s %s★ ONE-CLICK FULL SERVER OPTIMIZATION (All Options Combined)%s\n" "$C_Y" "$C_W" "$C_0" "$C_0"
-    printf "%s  [3]%s Apply Network & Kernel Tuning (BBR + FQ + sysctl)\n" "$C_G" "$C_0"
-    printf "%s  [4]%s Apply Operator Compatibility Booster (Fix Samantel / Mobile MTU)\n" "$C_G" "$C_0"
-    printf "%s  [5]%s Optimize Instagram & Video Streaming (Safe for WARP & Google)\n" "$C_G" "$C_0"
-    printf "%s  [6]%s Optimize System & Hardware (RAM, Ulimit 1M, Logs 200M, DNS)\n" "$C_G" "$C_0"
-    printf "%s  [7]%s Smart Swap Memory Manager (Dynamic RAM-based options)\n" "$C_G" "$C_0"
-    printf "%s  [8]%s Update System Packages & Install Essential Tools\n" "$C_G" "$C_0"
-    printf "%s  [9]%s Recommended VLESS-Reality Setup on Free Port 443\n" "$C_G" "$C_0"
-    printf "%s [10]%s Connection & Latency Diagnostics\n" "$C_G" "$C_0"
-    printf "%s  [r]%s Restore / Rollback Settings to Original State\n" "$C_M" "$C_0"
-    printf "%s  [u]%s %sUpdate Suite to Latest Version%s\n" "$C_B" "$C_W" "$C_0" "$C_0"
-    printf "%s  [0]%s Exit\n" "$C_R" "$C_0"
+    printf "%s  --- [ CORE & ONE-CLICK ] ---%s\n" "$C_W" "$C_0"
+    printf "%s  [1]%s  Run Read-Only Preflight Server Audit\n" "$C_G" "$C_0"
+    printf "%s  [2]%s  %s★ ONE-CLICK FULL SERVER OPTIMIZATION (All In One)%s\n\n" "$C_Y" "$C_W" "$C_0" "$C_0"
+
+    printf "%s  --- [ NETWORK & ANTI-CENSORSHIP ] ---%s\n" "$C_W" "$C_0"
+    printf "%s  [3]%s  Network & Kernel Tuning (BBR + FQ + sysctl)\n" "$C_G" "$C_0"
+    printf "%s  [4]%s  Operator Compatibility Booster (Fix Samantel / Mobile MTU)\n" "$C_G" "$C_0"
+    printf "%s  [5]%s  Optimize Instagram & Video Streaming (Safe for WARP & Google)\n" "$C_G" "$C_0"
+    printf "%s  [6]%s  Reality SNI & Clean Domain Finder (Test best domains for Reality)\n\n" "$C_G" "$C_0"
+
+    printf "%s  --- [ SYSTEM, HARDWARE & SECURITY ] ---%s\n" "$C_W" "$C_0"
+    printf "%s  [7]%s  System & Hardware Tuning (RAM, Ulimit 1M, Logs 200M, DNS)\n" "$C_G" "$C_0"
+    printf "%s  [8]%s  Smart Swap Memory Manager (Dynamic suggestions based on RAM)\n" "$C_G" "$C_0"
+    printf "%s  [9]%s  Security & Anti-Bruteforce Hardening (Fail2ban + Ping Shield)\n" "$C_G" "$C_0"
+    printf "%s  [10]%s Panel & Disaster Recovery Backup (1-Click Backup & Restore)\n" "$C_G" "$C_0"
+    printf "%s  [11]%s Automated Nightly Janitor Cronjob (Memory & Cache Cleaner)\n" "$C_G" "$C_0"
+    printf "%s  [12]%s Update System Packages & Install Essential Tools\n\n" "$C_G" "$C_0"
+
+    printf "%s  --- [ DIAGNOSTICS & GUIDES ] ---%s\n" "$C_W" "$C_0"
+    printf "%s  [13]%s Iran Operators Latency & Packet Loss Probe (MCI, Irancell, etc.)\n" "$C_G" "$C_0"
+    printf "%s  [14]%s Global Connection & Latency Diagnostics (Cloudflare, Google)\n" "$C_G" "$C_0"
+    printf "%s  [15]%s Recommended VLESS-Reality Setup on Free Port 443\n\n" "$C_G" "$C_0"
+
+    printf "%s  --- [ MANAGEMENT ] ---%s\n" "$C_W" "$C_0"
+    printf "%s  [r]%s  Restore / Rollback Settings to Original State\n" "$C_M" "$C_0"
+    printf "%s  [u]%s  %sUpdate Omega Suite to Latest Release%s\n" "$C_B" "$C_W" "$C_0" "$C_0"
+    printf "%s  [0]%s  Exit\n" "$C_R" "$C_0"
     printf "%s------------------------------------------------------------------------%s\n" "$C_B" "$C_0"
     
     local choice=""
-    if ! read -r -p "Please select an option [0-10, r, u]: " choice; then
+    if ! read -r -p "Please select an option [0-15, r, u]: " choice; then
       printf "\nSession ended.\n"
       exit 0
     fi
@@ -333,6 +365,12 @@ main_menu() {
         ;;
       6)
         clear_screen
+        bash "${SCRIPT_DIR}/omega-sni-checker.sh"
+        printf "\n"
+        read -r -p "Press [Enter] to return to main menu..." dummy || true
+        ;;
+      7)
+        clear_screen
         printf "%s=== System & Hardware Tuning ===%s\n\n" "$C_B" "$C_0"
         printf "  %s[1]%s Apply all hardware optimizations (Ulimit 1M, VM swappiness=10, 200M logs, fast DNS)\n" "$C_G" "$C_0"
         printf "  %s[2]%s Show hardware status\n" "$C_G" "$C_0"
@@ -347,21 +385,77 @@ main_menu() {
           *) echo "Invalid choice."; sleep 1 ;;
         esac
         ;;
-      7)
+      8)
         clear_screen
         bash "${SCRIPT_DIR}/omega-hardware-opt.sh" --swap
         ;;
-      8)
+      9)
+        clear_screen
+        printf "%s=== Security & Anti-Bruteforce Hardening ===%s\n\n" "$C_B" "$C_0"
+        printf "  %s[1]%s Apply Fail2ban & ICMP Ping Shield\n" "$C_G" "$C_0"
+        printf "  %s[2]%s Show Security Status & Banned IPs\n" "$C_G" "$C_0"
+        printf "  %s[3]%s Rollback Security Rules\n" "$C_M" "$C_0"
+        printf "  %s[0]%s Back to Main Menu\n\n" "$C_Y" "$C_0"
+        read -r -p "Choice [0-3]: " secchoice || secchoice="0"
+        case "$secchoice" in
+          1) clear_screen; bash "${SCRIPT_DIR}/omega-security.sh" --apply; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          2) clear_screen; bash "${SCRIPT_DIR}/omega-security.sh" --status; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          3) clear_screen; bash "${SCRIPT_DIR}/omega-security.sh" --rollback; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          0|b|B|"") continue ;;
+          *) echo "Invalid choice."; sleep 1 ;;
+        esac
+        ;;
+      10)
+        clear_screen
+        printf "%s=== Panel Disaster Recovery & Backup Manager ===%s\n\n" "$C_B" "$C_0"
+        printf "  %s[1]%s Create New Panel Backup (Database & Certs)\n" "$C_G" "$C_0"
+        printf "  %s[2]%s List Existing Backups\n" "$C_G" "$C_0"
+        printf "  %s[3]%s Restore Panel Database from Backup\n" "$C_M" "$C_0"
+        printf "  %s[0]%s Back to Main Menu\n\n" "$C_Y" "$C_0"
+        read -r -p "Choice [0-3]: " bakchoice || bakchoice="0"
+        case "$bakchoice" in
+          1) clear_screen; bash "${SCRIPT_DIR}/omega-backup.sh" --backup; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          2) clear_screen; bash "${SCRIPT_DIR}/omega-backup.sh" --list; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          3) clear_screen; bash "${SCRIPT_DIR}/omega-backup.sh" --restore; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          0|b|B|"") continue ;;
+          *) echo "Invalid choice."; sleep 1 ;;
+        esac
+        ;;
+      11)
+        clear_screen
+        printf "%s=== Automated Nightly Memory Janitor Cronjob ===%s\n\n" "$C_B" "$C_0"
+        printf "  %s[1]%s Enable Nightly Janitor (Daily at 04:00 AM)\n" "$C_G" "$C_0"
+        printf "  %s[2]%s Run Cache & Log Cleanup Right Now\n" "$C_G" "$C_0"
+        printf "  %s[3]%s Disable Nightly Janitor\n" "$C_M" "$C_0"
+        printf "  %s[4]%s Show Janitor Status\n" "$C_G" "$C_0"
+        printf "  %s[0]%s Back to Main Menu\n\n" "$C_Y" "$C_0"
+        read -r -p "Choice [0-4]: " cronchoice || cronchoice="0"
+        case "$cronchoice" in
+          1) clear_screen; bash "${SCRIPT_DIR}/omega-cron.sh" --enable; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          2) clear_screen; bash "${SCRIPT_DIR}/omega-cron.sh" --run; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          3) clear_screen; bash "${SCRIPT_DIR}/omega-cron.sh" --disable; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          4) clear_screen; bash "${SCRIPT_DIR}/omega-cron.sh" --status; printf "\n"; read -r -p "Press [Enter] to return to main menu..." dummy || true ;;
+          0|b|B|"") continue ;;
+          *) echo "Invalid choice."; sleep 1 ;;
+        esac
+        ;;
+      12)
         clear_screen
         bash "${SCRIPT_DIR}/omega-sysupdate.sh" || true
         printf "\n"
         read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
-      9)
-        show_reality_guide
+      13)
+        clear_screen
+        bash "${SCRIPT_DIR}/omega-iran-probe.sh"
+        printf "\n"
+        read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
-      10)
+      14)
         run_diagnostics
+        ;;
+      15)
+        show_reality_guide
         ;;
       r|R)
         clear_screen
@@ -373,6 +467,8 @@ main_menu() {
             bash "${SCRIPT_DIR}/omega-operator-fix.sh" --rollback || true
             bash "${SCRIPT_DIR}/omega-instagram-fix.sh" --rollback || true
             bash "${SCRIPT_DIR}/omega-hardware-opt.sh" --rollback || true
+            bash "${SCRIPT_DIR}/omega-security.sh" --rollback || true
+            bash "${SCRIPT_DIR}/omega-cron.sh" --disable || true
             printf "\n%s[OK] All modifications rolled back cleanly.%s\n" "$C_G" "$C_0"
             ;;
           *)

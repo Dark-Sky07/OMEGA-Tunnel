@@ -44,6 +44,11 @@ SCRIPT_FILES=(
   "omega-operator-fix.sh"
   "omega-instagram-fix.sh"
   "omega-hardware-opt.sh"
+  "omega-iran-probe.sh"
+  "omega-sni-checker.sh"
+  "omega-security.sh"
+  "omega-backup.sh"
+  "omega-cron.sh"
   "omega-sysupdate.sh"
   "omega-preflight.sh"
 )
