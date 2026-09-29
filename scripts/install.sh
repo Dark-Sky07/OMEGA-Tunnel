@@ -33,7 +33,7 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
-printf "\n%s=== Installing OMEGA-Tunnel Server Booster ===%s\n\n" "$C_B" "$C_0"
+printf "\n%s=== Installing Omega VPS All In One Optimizer ===%s\n\n" "$C_B" "$C_0"
 
 mkdir -p "$SCRIPTS_DIR"
 mkdir -p "${INSTALL_DIR}/backup"

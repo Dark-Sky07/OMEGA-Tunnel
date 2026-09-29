@@ -14,7 +14,7 @@ if [ ! -t 0 ] && [ -e /dev/tty ]; then
   exec </dev/tty
 fi
 
-VERSION="0.3.5"
+VERSION="1.0.0"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE_DIR="/opt/omega-boost"
 
@@ -99,12 +99,12 @@ draw_header() {
   mem_info="$(free -h 2>/dev/null | awk '/Mem:/ {print $3 "/" $2}')"
 
   printf "%s========================================================================%s\n" "$C_B" "$C_0"
-  printf "%s    ____  __  __ _____ ____    _       _____                             %s\n" "$C_B" "$C_0"
-  printf "%s   / __ \|  \/  | ____/ ___|  / \     |_   _|   _ _ __  _ __   ___ _ __  %s\n" "$C_B" "$C_0"
-  printf "%s  | |  | | |\/| |  _|| |  _  / _ \      | || | | | '_ \| '_ \ / _ \ '__| %s\n" "$C_B" "$C_0"
-  printf "%s  | |__| | |  | | |__| |_| |/ ___ \     | || |_| | | | | | | |  __/ |    %s\n" "$C_B" "$C_0"
-  printf "%s   \____/|_|  |_|_____\____/_/   \_\    |_| \__,_|_| |_|_| |_|\___|_|    %s\n" "$C_B" "$C_0"
-  printf "          %sServer Booster & Iranian Carrier Anti-Censorship Suite%s\n" "$C_W" "$C_0"
+  printf "%s   ____  __  __ _____ ____    _     __     ______  ____  ____  %s\n" "$C_B" "$C_0"
+  printf "%s  / __ \|  \/  | ____/ ___|  / \    \ \   / /  _ \/ ___||___ \ %s\n" "$C_B" "$C_0"
+  printf "%s | |  | | |\/| |  _|| |  _  / _ \    \ \ / /| |_) \___ \   __) |%s\n" "$C_B" "$C_0"
+  printf "%s | |__| | |  | | |__| |_| |/ ___ \    \ V / |  __/ ___) | / __/ %s\n" "$C_B" "$C_0"
+  printf "%s  \____/|_|  |_|_____\____/_/   \_\    \_/  |_|   |____/ |_____|%s\n" "$C_B" "$C_0"
+  printf "                   %sOmega VPS All In One Optimizer%s\n" "$C_W" "$C_0"
   printf "                         Version %s\n" "$VERSION"
   printf "%s========================================================================%s\n" "$C_B" "$C_0"
   

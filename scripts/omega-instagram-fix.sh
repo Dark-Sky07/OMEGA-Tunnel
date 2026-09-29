@@ -73,11 +73,18 @@ apply_fix() {
 
   mkdir -p "$BASE_DIR"
 
-  # Clean up any generic rules if present
+  # Clean up any generic UDP 443 rules and hardcoded MSS restrictions
   while iptables -D OUTPUT -p udp --dport 443 -j REJECT --reject-with icmp-port-unreachable 2>/dev/null; do :; done
   while iptables -D FORWARD -p udp --dport 443 -j REJECT --reject-with icmp-port-unreachable 2>/dev/null; do :; done
+  while iptables -t mangle -D POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1300 2>/dev/null; do :; done
+  while iptables -t mangle -D FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1300 2>/dev/null; do :; done
 
-  info "Injecting targeted QUIC rejection for Instagram/Meta CDN ranges..."
+  # Ensure PMTU clamping is used instead of restrictive 1300 MSS
+  if ! iptables -t mangle -C POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu >/dev/null 2>&1; then
+    iptables -t mangle -A POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+  fi
+
+  info "Injecting targeted QUIC rejection for Instagram/Meta CDN ranges only..."
   for cidr in "${META_CIDRS[@]}"; do
     if ! iptables -C OUTPUT -d "$cidr" -p udp --dport 443 -j REJECT --reject-with icmp-port-unreachable >/dev/null 2>&1; then
       iptables -I OUTPUT -d "$cidr" -p udp --dport 443 -j REJECT --reject-with icmp-port-unreachable
@@ -87,17 +94,18 @@ apply_fix() {
     fi
   done
 
-  # Kernel TCP streaming buffer tuning
+  # Kernel TCP streaming buffer tuning (Optimized for both video streaming and high-speed Google/AI uploads)
   info "Applying kernel streaming buffers..."
   /sbin/sysctl -w net.ipv4.tcp_slow_start_after_idle=0 >/dev/null 2>&1 || true
-  /sbin/sysctl -w net.ipv4.tcp_notsent_lowat=16384 >/dev/null 2>&1 || true
+  /sbin/sysctl -w net.ipv4.tcp_notsent_lowat=131072 >/dev/null 2>&1 || true
 
   touch "$ACTIVE_FLAG"
   printf "\n"
   ok "Targeted Instagram optimizer applied successfully!"
   info "- WireGuard and Cloudflare WARP remain 100% active and untouched."
+  info "- Google / Gemini / AI upload speeds fully restored."
   info "- No action required from users/clients."
-  info "- Instagram reels and stories will now stream smoothly over TCP."
+  info "- Instagram reels and stories stream smoothly over TCP."
 }
 
 rollback_fix() {

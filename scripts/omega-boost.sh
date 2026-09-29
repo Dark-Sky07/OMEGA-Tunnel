@@ -70,7 +70,7 @@ get_default_iface() {
 TUNING_PARAMS=(
   "net.core.default_qdisc|fq|Fair Queueing packet pacing required for BBR"
   "net.ipv4.tcp_congestion_control|bbr|BBR congestion control for packet-loss resistance"
-  "net.ipv4.tcp_notsent_lowat|16384|Caps unsent buffer at 16KB; prevents bufferbloat in multiplexed VLESS"
+  "net.ipv4.tcp_notsent_lowat|131072|Caps unsent buffer at 128KB; prevents bufferbloat while enabling fast uploads to Google & AI"
   "net.ipv4.tcp_fastopen|3|TCP Fast Open for both client & server; saves 1 RTT"
   "net.ipv4.tcp_tw_reuse|1|Safe reuse of TIME_WAIT sockets for outgoing connections"
   "net.ipv4.tcp_fin_timeout|15|Fast reclaim of dead sockets (reduced from 60s to 15s)"
