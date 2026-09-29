@@ -79,7 +79,7 @@ scan_ips() {
   printf "\n%s=== HOW TO USE IN V2RAY / 3X-UI ===%s\n" "$C_B" "$C_0"
   printf "  1. In v2rayNG / V2Box client configuration:\n"
   printf "     * Set %sAddress (IP)%s to any of the Clean IPs above (e.g. %s)\n" "$C_W" "$C_0" "${sorted[0]:-104.16.132.229}"
-  printf "     * Set %sHost / SNI%s to your Cloudflare domain (e.g. tr.dark-network.info)\n" "$C_W" "$C_0"
+  printf "     * Set %sHost / SNI%s to your Cloudflare domain (e.g. cdn.yourdomain.com)\n" "$C_W" "$C_0"
   printf "     * Set %sPort%s to 2096, 2053, 2083, or 443 (Cloudflare HTTPS ports)\n" "$C_W" "$C_0"
   printf "  2. Traffic bypasses domestic ISP blocking cleanly without touching your server IP!\n\n"
 }
