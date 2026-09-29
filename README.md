@@ -1,7 +1,7 @@
-# 👑 Omega VPS All In One Optimizer (Velocity Edition)
+# 👑 Omega VPS All In One Optimizer (Bidirectional Turbo Edition)
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Release-v4.1.0--Velocity-blue.svg?style=for-the-badge&logo=github" alt="Release v4.1.0" />
+  <img src="https://img.shields.io/badge/Release-v4.2.0--Turbo-blue.svg?style=for-the-badge&logo=github" alt="Release v4.2.0" />
   <img src="https://img.shields.io/badge/OS-Ubuntu%20|%20Debian%20|%20CentOS-orange.svg?style=for-the-badge&logo=linux" alt="OS Support" />
   <img src="https://img.shields.io/badge/Panel%20Safety-100%25%20Untouched-success.svg?style=for-the-badge&logo=shield" alt="Panel Safety" />
   <img src="https://img.shields.io/badge/Iran%20Server-Docker%20%2B%20APT%20%2B%20GitHub%20Speedup-orange.svg?style=for-the-badge&logo=docker" alt="Iran Server Booster" />
@@ -70,7 +70,7 @@ omega
   [2]  ★ ONE-CLICK FULL SERVER OPTIMIZATION (All In One)
 
   --- [ NETWORK & ANTI-CENSORSHIP ] ---
-  [3]  Network & Kernel Tuning (BBR + FQ + 64MB Buffers + ECN Off + txq 10k)
+  [3]  Network & Kernel Tuning (BBR + FQ + 64MB Buffers + Client Upload Turbo)
   [4]  Operator Compatibility Booster (Fix Samantel / Mobile PMTU Clamping)
   [5]  Optimize Instagram & Video Streaming (Safe for WARP & Google)
   [6]  Client Battery & Persistent Connection Guard (Permanent Background Stay)
