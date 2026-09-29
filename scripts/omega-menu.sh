@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 #===============================================================================
-#  omega-menu — Interactive Terminal Menu for OMEGA-Tunnel
+#  omega-menu — Interactive Terminal Menu for Omega VPS All In One Optimizer
 #
 #  Comprehensive server management, network optimization, operator booster,
-#  and system maintenance. 100% English interface for terminal compatibility.
+#  hardware tuning, smart swap manager, and system maintenance.
+#  100% English interface for terminal compatibility.
 #===============================================================================
 
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
@@ -14,7 +15,7 @@ if [ ! -t 0 ] && [ -e /dev/tty ]; then
   exec </dev/tty
 fi
 
-VERSION="1.0.0"
+VERSION="1.1.0"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE_DIR="/opt/omega-boost"
 
@@ -62,17 +63,36 @@ get_panel_status() {
 
 get_operator_status() {
   if iptables -t mangle -C POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu >/dev/null 2>&1; then
-    printf "%sActive (MSS Clamped)%s" "$C_G" "$C_0"
+    printf "%sActive (PMTU Clamped)%s" "$C_G" "$C_0"
   else
     printf "%sNot Active%s" "$C_Y" "$C_0"
   fi
 }
 
 get_instagram_status() {
-  if iptables -C OUTPUT -p udp --dport 443 -j REJECT --reject-with icmp-port-unreachable >/dev/null 2>&1; then
-    printf "%sOptimized (QUIC Fast-Reject)%s" "$C_G" "$C_0"
+  if iptables -C OUTPUT -d 157.240.0.0/16 -p udp --dport 443 -j REJECT --reject-with icmp-port-unreachable >/dev/null 2>&1; then
+    printf "%sTargeted (Safe for WARP)%s" "$C_G" "$C_0"
   else
     printf "%sDefault (Unoptimized)%s" "$C_Y" "$C_0"
+  fi
+}
+
+get_hardware_status() {
+  if [ -f "/etc/security/limits.d/99-omega-limits.conf" ] && [ -f "/etc/sysctl.d/97-omega-vm.conf" ]; then
+    printf "%sOptimized (1M ulimit, vm=10)%s" "$C_G" "$C_0"
+  else
+    printf "%sDefault%s" "$C_Y" "$C_0"
+  fi
+}
+
+get_swap_status() {
+  local swap_kb
+  swap_kb="$(awk '/SwapTotal/ {print $2}' /proc/meminfo 2>/dev/null || echo "0")"
+  local swap_gb=$(( swap_kb / 1048576 ))
+  if [ "$swap_gb" -gt 0 ]; then
+    printf "%s%d GB Active%s" "$C_G" "$swap_gb" "$C_0"
+  else
+    printf "%sNone%s" "$C_Y" "$C_0"
   fi
 }
 
@@ -110,7 +130,8 @@ draw_header() {
   
   printf "  Server Panel:      %-30b  Kernel CC:     %b\n" "$(get_panel_status)" "$(get_bbr_status)"
   printf "  Operator Fix:      %-30b  Memory:        %s\n" "$(get_operator_status)" "${mem_info:-unknown}"
-  printf "  Instagram Stream:  %-30b  TCP 443:       %b\n" "$(get_instagram_status)" "$(get_port_status 443 tcp)"
+  printf "  Instagram Stream:  %-30b  Swap Memory:   %b\n" "$(get_instagram_status)" "$(get_swap_status)"
+  printf "  Hardware / Ulimit: %-30b  TCP 443:       %b\n" "$(get_hardware_status)" "$(get_port_status 443 tcp)"
   printf "%s------------------------------------------------------------------------%s\n" "$C_B" "$C_0"
 }
 
@@ -160,25 +181,29 @@ run_one_click() {
   clear_screen
   printf "%s=== ONE-CLICK FULL SERVER OPTIMIZATION ===%s\n" "$C_B" "$C_0"
   printf "This will run all optimizations together:\n"
-  printf "  1. System Update & Essential Tools Installation\n"
-  printf "  2. Network & Kernel Tuning (BBR + FQ + sysctl buffer tuning)\n"
-  printf "  3. Operator Compatibility Booster (Samantel/Mobile MSS Clamping)\n"
-  printf "  4. Instagram & Streaming Optimizer (QUIC Fast-Reject + TCP Pacing)\n\n"
+  printf "  1. Network & Kernel Tuning (BBR + FQ + sysctl buffer tuning)\n"
+  printf "  2. Operator Compatibility Booster (Samantel/Mobile PMTU Clamping)\n"
+  printf "  3. Instagram & Streaming Optimizer (Targeted QUIC Rejection + fast TCP)\n"
+  printf "  4. System & Hardware Tuning (1M ulimit, swappiness=10, 200M logs, fast DNS)\n"
+  printf "  5. System Package Maintenance (curl, jq, sqlite3, htop)\n\n"
   
   read -r -p "Do you want to proceed? [y/N]: " confirm || confirm="n"
   case "$confirm" in
     [yY]|[yY][eE][sS])
-      printf "\n[1/4] Updating system packages...\n"
-      bash "${SCRIPT_DIR}/omega-sysupdate.sh" || true
-      
-      printf "\n[2/4] Applying kernel & network tuning...\n"
+      printf "\n[1/5] Applying kernel & network tuning...\n"
       bash "${SCRIPT_DIR}/omega-boost.sh" --apply || true
       
-      printf "\n[3/4] Applying operator compatibility booster...\n"
+      printf "\n[2/5] Applying operator compatibility booster...\n"
       bash "${SCRIPT_DIR}/omega-operator-fix.sh" --apply || true
 
-      printf "\n[4/4] Applying Instagram & video streaming optimizer...\n"
+      printf "\n[3/5] Applying Instagram & video streaming optimizer...\n"
       bash "${SCRIPT_DIR}/omega-instagram-fix.sh" --apply || true
+
+      printf "\n[4/5] Applying system hardware, RAM, ulimit, logs & DNS tuning...\n"
+      bash "${SCRIPT_DIR}/omega-hardware-opt.sh" --all || true
+
+      printf "\n[5/5] Updating essential system packages...\n"
+      bash "${SCRIPT_DIR}/omega-sysupdate.sh" || true
       
       printf "\n%s[SUCCESS] Full Server Optimization Completed!%s\n" "$C_G" "$C_0"
       ;;
@@ -192,11 +217,11 @@ run_one_click() {
 
 update_suite() {
   clear_screen
-  printf "%s=== UPDATING OMEGA-TUNNEL SUITE ===%s\n\n" "$C_B" "$C_0"
-  printf "Fetching latest scripts from repository...\n"
+  printf "%s=== UPDATING OMEGA VPS ALL IN ONE OPTIMIZER ===%s\n\n" "$C_B" "$C_0"
+  printf "Fetching latest release scripts from repository...\n"
   
   local raw_base="https://raw.githubusercontent.com/Dark-Sky07/OMEGA-Tunnel/arena/01a0d868-omega-tunnel/scripts"
-  local files=("omega-menu.sh" "omega-boost.sh" "omega-operator-fix.sh" "omega-instagram-fix.sh" "omega-sysupdate.sh" "omega-preflight.sh")
+  local files=("omega-menu.sh" "omega-boost.sh" "omega-operator-fix.sh" "omega-instagram-fix.sh" "omega-hardware-opt.sh" "omega-sysupdate.sh" "omega-preflight.sh")
   
   for f in "${files[@]}"; do
     printf "  Updating %s..." "$f"
@@ -222,26 +247,25 @@ main_menu() {
     printf "%s  [1]%s Run Read-Only Preflight Server Audit\n" "$C_G" "$C_0"
     printf "%s  [2]%s Apply Network & Kernel Tuning (BBR + FQ + sysctl)\n" "$C_G" "$C_0"
     printf "%s  [3]%s Apply Operator Compatibility Booster (Fix Samantel / Mobile MTU)\n" "$C_G" "$C_0"
-    printf "%s  [4]%s Optimize Instagram & Video Streaming (Fix Reels/Story Stutter)\n" "$C_G" "$C_0"
-    printf "%s  [5]%s Update System & Install Essential Tools (curl, jq, sqlite3, htop)\n" "$C_G" "$C_0"
-    printf "%s  [6]%s %s★ ONE-CLICK FULL SERVER OPTIMIZATION (All of Above)%s\n" "$C_Y" "$C_W" "$C_0" "$C_0"
-    printf "%s  [7]%s Recommended VLESS-Reality Setup on Free Port 443\n" "$C_G" "$C_0"
-    printf "%s  [8]%s Connection & Latency Diagnostics\n" "$C_G" "$C_0"
-    printf "%s  [9]%s Restore / Rollback Settings to Original State\n" "$C_M" "$C_0"
-    printf "%s  [u]%s %sUpdate OMEGA-Tunnel Suite to Latest Version%s\n" "$C_B" "$C_W" "$C_0" "$C_0"
+    printf "%s  [4]%s Optimize Instagram & Video Streaming (Safe for WARP & Google)\n" "$C_G" "$C_0"
+    printf "%s  [5]%s Optimize System & Hardware (RAM, Ulimit 1M, Logs 200M, DNS)\n" "$C_G" "$C_0"
+    printf "%s  [6]%s Smart Swap Memory Manager (Dynamic RAM-based options)\n" "$C_G" "$C_0"
+    printf "%s  [7]%s Update System Packages & Install Essential Tools\n" "$C_G" "$C_0"
+    printf "%s  [8]%s %s★ ONE-CLICK FULL SERVER OPTIMIZATION (All of Above)%s\n" "$C_Y" "$C_W" "$C_0" "$C_0"
+    printf "%s  [9]%s Recommended VLESS-Reality Setup on Free Port 443\n" "$C_G" "$C_0"
+    printf "%s [10]%s Connection & Latency Diagnostics\n" "$C_G" "$C_0"
+    printf "%s  [r]%s Restore / Rollback Settings to Original State\n" "$C_M" "$C_0"
+    printf "%s  [u]%s %sUpdate Suite to Latest Version%s\n" "$C_B" "$C_W" "$C_0" "$C_0"
     printf "%s  [0]%s Exit\n" "$C_R" "$C_0"
     printf "%s------------------------------------------------------------------------%s\n" "$C_B" "$C_0"
     
     local choice=""
-    if ! read -r -p "Please select an option [0-9 or u]: " choice; then
+    if ! read -r -p "Please select an option [0-10, r, u]: " choice; then
       printf "\nSession ended.\n"
       exit 0
     fi
 
     case "$choice" in
-      u|U)
-        update_suite
-        ;;
       1)
         clear_screen
         bash "${SCRIPT_DIR}/omega-preflight.sh" || true
@@ -303,20 +327,43 @@ main_menu() {
         ;;
       5)
         clear_screen
-        bash "${SCRIPT_DIR}/omega-sysupdate.sh" || true
+        printf "Select action for System & Hardware Tuning:\n"
+        printf "  [1] Apply all hardware optimizations (Ulimit 1M, VM swappiness=10, 200M logs, fast DNS)\n"
+        printf "  [2] Show hardware status\n"
+        printf "  [3] Rollback hardware tuning\n"
+        read -r -p "Choice [1-3]: " hwchoice || hwchoice=""
+        clear_screen
+        case "$hwchoice" in
+          1) bash "${SCRIPT_DIR}/omega-hardware-opt.sh" --all ;;
+          2) bash "${SCRIPT_DIR}/omega-hardware-opt.sh" --status ;;
+          3) bash "${SCRIPT_DIR}/omega-hardware-opt.sh" --rollback ;;
+          *) echo "Invalid choice." ;;
+        esac
         printf "\n"
         read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
       6)
-        run_one_click
+        clear_screen
+        bash "${SCRIPT_DIR}/omega-hardware-opt.sh" --swap
+        printf "\n"
+        read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
       7)
-        show_reality_guide
+        clear_screen
+        bash "${SCRIPT_DIR}/omega-sysupdate.sh" || true
+        printf "\n"
+        read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
       8)
-        run_diagnostics
+        run_one_click
         ;;
       9)
+        show_reality_guide
+        ;;
+      10)
+        run_diagnostics
+        ;;
+      r|R)
         clear_screen
         printf "%s=== ROLLBACK ALL OMEGA-TUNNEL SETTINGS ===%s\n" "$C_M" "$C_0"
         read -r -p "Are you sure you want to restore original server settings? [y/N]: " confirm_rb || confirm_rb="n"
@@ -325,6 +372,7 @@ main_menu() {
             bash "${SCRIPT_DIR}/omega-boost.sh" --rollback || true
             bash "${SCRIPT_DIR}/omega-operator-fix.sh" --rollback || true
             bash "${SCRIPT_DIR}/omega-instagram-fix.sh" --rollback || true
+            bash "${SCRIPT_DIR}/omega-hardware-opt.sh" --rollback || true
             printf "\n%s[OK] All modifications rolled back cleanly.%s\n" "$C_G" "$C_0"
             ;;
           *)
@@ -334,13 +382,16 @@ main_menu() {
         printf "\n"
         read -r -p "Press [Enter] to return to main menu..." dummy || true
         ;;
+      u|U)
+        update_suite
+        ;;
       0|q|Q)
         clear_screen
-        printf "Exiting OMEGA-Tunnel menu. Goodbye!\n"
+        printf "Exiting Omega VPS All In One Optimizer. Goodbye!\n"
         exit 0
         ;;
       *)
-        printf "Invalid selection. Please choose between 0 and 9.\n"
+        printf "Invalid selection. Please choose from the menu.\n"
         sleep 1
         ;;
     esac
