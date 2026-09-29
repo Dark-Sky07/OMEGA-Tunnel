@@ -10,7 +10,7 @@
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
 set -u
 
-VERSION="4.0.1"
+VERSION="4.1.0"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 [ -f "${SCRIPT_DIR}/omega-watchdog.sh" ] || SCRIPT_DIR="/opt/omega-boost/scripts"
 [ -f "${SCRIPT_DIR}/omega-watchdog.sh" ] || SCRIPT_DIR="/opt/omega-boost"

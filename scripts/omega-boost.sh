@@ -22,12 +22,13 @@
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
 set -u
 
-VERSION="0.3.0"
+VERSION="2.0.0"
 CONF_FILE="/etc/sysctl.d/99-omega-boost.conf"
 BASE_DIR="/opt/omega-boost"
 BACKUP_DIR="${BASE_DIR}/backup"
 BACKUP_FILE="${BASE_DIR}/sysctl.bak"
 QDISC_BACKUP="${BASE_DIR}/qdisc.bak"
+TXQ_SERVICE="/etc/systemd/system/omega-txq.service"
 
 # ----------------- Color helpers -----------------
 if [ -t 1 ]; then
@@ -76,16 +77,22 @@ TUNING_PARAMS=(
   "net.ipv4.tcp_fin_timeout|15|Fast reclaim of dead sockets (reduced from 60s to 15s)"
   "net.ipv4.tcp_slow_start_after_idle|0|Preserves CWND after idle intervals (crucial for messaging apps)"
   "net.ipv4.tcp_mtu_probing|1|Dynamic Path MTU Discovery; fixes blackhole drops by mobile firewalls"
+  "net.ipv4.tcp_ecn|0|Disable ECN to prevent packet drops and handshake stalling by Iranian firewalls"
   "net.ipv4.tcp_keepalive_time|300|Detects silent middlebox disconnects in 5m instead of 2h"
   "net.ipv4.tcp_keepalive_intvl|15|Interval between keepalive probes"
   "net.ipv4.tcp_keepalive_probes|5|Number of keepalive probes before declaring drop"
+  "net.ipv4.tcp_syn_retries|3|Fast fallback on SYN drops from mobile firewalls (drops timeout from 120s to ~7s)"
+  "net.ipv4.tcp_synack_retries|3|Fast SYN-ACK retransmit for mobile clients"
+  "net.ipv4.ip_local_port_range|1024 65535|Expanded ephemeral outbound port range (prevents port exhaustion under high concurrent load)"
   "net.core.somaxconn|8192|Increased backlog for incoming connection spikes"
   "net.ipv4.tcp_max_syn_backlog|8192|Maximum queue of pending half-open connections"
   "net.core.netdev_max_backlog|16384|NIC incoming packet queue limit"
-  "net.core.rmem_max|33554432|Maximum TCP receive buffer (32MB)"
-  "net.core.wmem_max|33554432|Maximum TCP send buffer (32MB)"
-  "net.ipv4.tcp_rmem|4096 87380 33554432|TCP receive memory autotuning limits"
-  "net.ipv4.tcp_wmem|4096 65536 33554432|TCP send memory autotuning limits"
+  "net.core.rmem_max|67108864|Maximum socket receive buffer (64MB) for high-speed UDP (Hysteria2) & TCP"
+  "net.core.wmem_max|67108864|Maximum socket send buffer (64MB) for high-speed UDP (Hysteria2) & TCP"
+  "net.ipv4.udp_rmem_min|16384|Minimum UDP receive buffer for Hysteria2 / QUIC packet bursts"
+  "net.ipv4.udp_wmem_min|16384|Minimum UDP send buffer for Hysteria2 / QUIC packet bursts"
+  "net.ipv4.tcp_rmem|4096 87380 67108864|TCP receive memory autotuning limits (up to 64MB)"
+  "net.ipv4.tcp_wmem|4096 65536 67108864|TCP send memory autotuning limits (up to 64MB)"
 )
 
 show_status() {
@@ -97,7 +104,7 @@ show_status() {
   for item in "${TUNING_PARAMS[@]}"; do
     IFS='|' read -r key rec desc <<< "$item"
     local cur
-    cur="$(get_sysctl "$key" | tr -s ' ')"
+    cur="$(get_sysctl "$key" | tr -s '[:blank:]' ' ')"
     if [ "$cur" = "$rec" ]; then
       printf "  %s%-36s%s %s%-18s%s %-18s\n" "$C_G" "$key" "$C_0" "$C_G" "$cur" "$C_0" "$rec"
     else
@@ -113,6 +120,11 @@ show_status() {
     local cur_qdisc
     cur_qdisc="$(tc qdisc show dev "$def_iface" 2>/dev/null | head -n1)"
     printf "  Interface qdisc (%s): %s\n" "$def_iface" "$cur_qdisc"
+  fi
+  if [ -n "$def_iface" ]; then
+    local cur_txq
+    cur_txq="$(cat /sys/class/net/"$def_iface"/txqueuelen 2>/dev/null || ip link show dev "$def_iface" 2>/dev/null | awk '/qlen/ {print $NF}')"
+    printf "  Interface txqueuelen (%s): %s (Target: 10000)\n" "$def_iface" "$cur_txq"
   fi
 
   if [ -f "$CONF_FILE" ]; then
@@ -139,7 +151,7 @@ dry_run() {
   for item in "${TUNING_PARAMS[@]}"; do
     IFS='|' read -r key rec desc <<< "$item"
     local cur
-    cur="$(get_sysctl "$key" | tr -s ' ')"
+    cur="$(get_sysctl "$key" | tr -s '[:blank:]' ' ')"
     if [ "$cur" = "$rec" ]; then
       printf "  %s%-34s %-14s %-14s [Already Optimized]%s\n" "$C_G" "$key" "$cur" "$rec" "$C_0"
     else
@@ -152,6 +164,7 @@ dry_run() {
   printf "\n"
   info "Detected network interface: $def_iface"
   info "qdisc will be upgraded to 'fq' so BBR can pace packets with microsecond accuracy."
+  info "txqueuelen will be boosted to 10000 to eliminate buffer drops during traffic bursts."
   info "Zero downtime: no services will restart and zero packets will be dropped."
 }
 
@@ -208,6 +221,29 @@ apply_tuning() {
     tc qdisc replace dev "$def_iface" root fq 2>/dev/null || true
   fi
 
+  if [ -n "$def_iface" ]; then
+    info "Boosting NIC txqueuelen to 10000 on interface $def_iface..."
+    ip link set dev "$def_iface" txqueuelen 10000 2>/dev/null || true
+
+    # Persist txqueuelen via systemd service
+    cat << EOF > "$TXQ_SERVICE"
+[Unit]
+Description=Omega VPS NIC txqueuelen Booster
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/sbin/ip link set dev $def_iface txqueuelen 10000
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+    systemctl daemon-reload >/dev/null 2>&1 || true
+    systemctl enable omega-txq.service >/dev/null 2>&1 || true
+    ok "NIC txqueuelen boosted to 10000 and persisted across reboots."
+  fi
+
   printf "\n"
   ok "Kernel & network parameters tuned successfully!"
   info "Zero connections disrupted, zero services restarted."
@@ -240,6 +276,16 @@ rollback_tuning() {
     if grep -q "cake" "$QDISC_BACKUP"; then
       tc qdisc replace dev "$def_iface" root cake 2>/dev/null || true
     fi
+  fi
+
+  if [ -n "$def_iface" ]; then
+    ip link set dev "$def_iface" txqueuelen 1000 2>/dev/null || true
+  fi
+
+  if [ -f "$TXQ_SERVICE" ]; then
+    systemctl disable --now omega-txq.service >/dev/null 2>&1 || true
+    rm -f "$TXQ_SERVICE"
+    systemctl daemon-reload >/dev/null 2>&1 || true
   fi
 
   ok "Network parameters successfully restored to previous state."
